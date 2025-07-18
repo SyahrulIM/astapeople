@@ -51,6 +51,8 @@
                         <th>Date</th>
                         <th>Check In</th>
                         <th>Check Out</th>
+                        <th>Late(Min)</th>
+                        <th>Early Leave(Min)</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -72,6 +74,18 @@
 
                         $isLate = $checkIn && $checkIn > $workStart;
                         $isEarlyLeave = $checkOut && $checkOut < $workEnd;
+
+                        // Hitung keterlambatan dan pulang awal (dalam menit)
+                        $lateMinutes = 0;
+                        $earlyLeaveMinutes = 0;
+
+                        if ($isLate) {
+                            $lateMinutes = (strtotime($checkIn) - strtotime($workStart)) / 60;
+                        }
+
+                        if ($isEarlyLeave) {
+                            $earlyLeaveMinutes = (strtotime($workEnd) - strtotime($checkOut)) / 60;
+                        }
                     ?>
                         <tr>
                             <td><?= $no++ ?></td>
@@ -79,6 +93,8 @@
                             <td><?= $date ?></td>
                             <td><?= $checkIn ?></td>
                             <td><?= $checkOut ?></td>
+                            <td><?= $lateMinutes > 0 ? round($lateMinutes) : '' ?></td>
+                            <td><?= $earlyLeaveMinutes > 0 ? round($earlyLeaveMinutes) : '' ?></td>
                             <td>
                                 <?php if ($isWeekend) : ?>
                                     <span class="badge bg-secondary">Weekend</span>
