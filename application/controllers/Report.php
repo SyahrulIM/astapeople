@@ -99,13 +99,64 @@ class Report extends CI_Controller
             $row->holiday_type = $holiday_by_date[$row->date] ?? 'Workday';
         }
 
+        // Summary Counters
+        $summary = [
+            'present' => 0,
+            'absent' => 0,
+            'national_holiday' => 0,
+            'incomplete' => 0
+        ];
+
+        // Hitung summary
+        foreach ($presence_data as $row) {
+            $isWeekend = $row->holiday_type === 'Weekend';
+            $isNationalHoliday = $row->holiday_type === 'National Holiday';
+
+            if ($isWeekend) {
+                continue; // Skip weekend
+            }
+
+            if ($isNationalHoliday) {
+                $summary['national_holiday']++;
+            } elseif (empty($row->check_in) && empty($row->check_out)) {
+                $summary['absent']++;
+            } elseif (empty($row->check_in) || empty($row->check_out)) {
+                $summary['incomplete']++;
+            } else {
+                $summary['present']++;
+            }
+        }
+
+        // Hitung jumlah hari kerja: Senin–Sabtu (0 = Minggu, 6 = Sabtu), kecuali National Holiday
+        $total_days = 0;
+
+        $period = new DatePeriod(
+            new DateTime($start_date),
+            new DateInterval('P1D'),
+            (new DateTime($end_date))->modify('+1 day')
+        );
+
+        foreach ($period as $date) {
+            $dayOfWeek = $date->format('w'); // 0 = Minggu
+            $dateStr = $date->format('Y-m-d');
+
+            $isSunday = ($dayOfWeek == 0);
+            $isNationalHoliday = isset($holiday_by_date[$dateStr]) && $holiday_by_date[$dateStr] === 'National Holiday';
+
+            if (!$isSunday && !$isNationalHoliday) {
+                $total_days++;
+            }
+        }
+
         $data = [
             'title' => 'Report',
             'presence' => $presence_data,
             'employee' => $employees,
             'selected_employee' => $employee_id,
             'absent_count_by_date' => $absent_count_by_date,
-            'holiday_by_date' => $holiday_by_date
+            'holiday_by_date' => $holiday_by_date,
+            'summary' => $summary,
+            'total_days' => $total_days
         ];
 
         $this->load->view('theme/v_head', $data);

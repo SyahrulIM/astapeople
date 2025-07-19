@@ -34,13 +34,14 @@
             <div class="list-group list-group-flush">
                 <a class="list-group-item list-group-item-action list-group-item-light p-3 <?= ($current == 'dashboard') ? 'active' : ''; ?>" href="<?php echo base_url('dashboard/'); ?>">Dashboard</a>
                 <div class="list-group-item p-0">
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3 d-flex justify-content-between align-items-center <?= in_array($current, ['']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#dbpresenceSubmenu" role="button" aria-expanded="<?= in_array($current, ['absensi', 'report']) ? 'true' : 'false'; ?>" aria-controls="dbpresenceSubmenu">
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3 d-flex justify-content-between align-items-center <?= in_array($current, ['']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#dbpresenceSubmenu" role="button" aria-expanded="<?= in_array($current, ['absensi', 'report', 'meal_allowance']) ? 'true' : 'false'; ?>" aria-controls="dbpresenceSubmenu">
                         Database Absensi
                         <i class="fas fa-chevron-down small"></i>
                     </a>
-                    <div class="collapse <?= in_array($current, ['presence', 'report']) ? 'show' : ''; ?>" id="dbpresenceSubmenu">
+                    <div class="collapse <?= in_array($current, ['presence', 'report', 'meal_allowance']) ? 'show' : ''; ?>" id="dbpresenceSubmenu">
                         <a class="list-group-item list-group-item-action list-group-item-light ps-5 <?= ($current == 'presence') ? 'active' : ''; ?>" href="<?= base_url('presence'); ?>">Absensi</a>
                         <a class="list-group-item list-group-item-action list-group-item-light ps-5 <?= ($current == 'report') ? 'active' : ''; ?>" href="<?= base_url('report'); ?>">Report</a>
+                        <a class="list-group-item list-group-item-action list-group-item-light ps-5 <?= ($current == 'meal_allowance') ? 'active' : ''; ?>" href="<?= base_url('meal_allowance'); ?>">Meal Allowance</a>
                     </div>
                 </div>
                 <?php if ($this->session->userdata('idrole') == 1) { ?>

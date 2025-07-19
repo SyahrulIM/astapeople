@@ -38,6 +38,34 @@
                     </div>
                 </div>
             </form>
+            <hr>
+            <div class="row">
+                <div class="col text-center">
+                    <h3>Summary</h3>
+                </div>
+            </div>
+            <div class="row text-center">
+                <div class="col">
+                    <h5>Total Working Days</h5>
+                    <p><?php echo $total_days; ?></p>
+                </div>
+                <div class="col">
+                    <h5>Present</h5>
+                    <p><?= $summary['present'] ?? 0 ?></p>
+                </div>
+                <div class="col">
+                    <h5>Absent</h5>
+                    <p><?= $summary['absent'] ?? 0 ?></p>
+                </div>
+                <div class="col">
+                    <h5>National Holiday</h5>
+                    <p><?= $summary['national_holiday'] ?? 0 ?></p>
+                </div>
+                <div class="col">
+                    <h5>Incomplete Attendance</h5>
+                    <p><?= $summary['incomplete'] ?? 0 ?></p>
+                </div>
+            </div>
         </div>
     </div>
 
