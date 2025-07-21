@@ -89,6 +89,7 @@
                                 <option value="Sick">Sick</option>
                                 <option value="Personal">Personal</option>
                                 <option value="Cuti">Cuti</option>
+                                <option value="Dinas">Dinas</option>
                             </select>
                         </div>
                     </div>
@@ -243,11 +244,19 @@
             var employeeId = $(this).data('employee-id');
             var employeeName = $(this).closest('tr').find('td:eq(1)').text();
             var date = $(this).data('date');
+            var existingReason = $(this).closest('tr').find('td:eq(8)').text().trim(); // Get existing reason from table
 
             // Set values in modal
             $('#modalEmployeeId').val(employeeId);
             $('#modalDate').val(date);
             $('#permitModal .modal-title').text('Submit Permit for ' + employeeName + ' - ' + date);
+
+            // Set existing reason if available and not empty/dash
+            if (existingReason && existingReason !== '-') {
+                $('#reason').val(existingReason);
+            } else {
+                $('#reason').val(''); // Reset to default if no reason exists
+            }
 
             // Show modal
             var modal = new bootstrap.Modal(document.getElementById('permitModal'));
