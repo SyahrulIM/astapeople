@@ -47,7 +47,7 @@
             <div class="row text-center">
                 <div class="col">
                     <h5>Total Working Days</h5>
-                    <p><?php echo $total_days; ?></p>
+                    <p><?= $summary['total_days'] ?? 0 ?></p>
                 </div>
                 <div class="col">
                     <h5>Present</h5>

@@ -115,8 +115,31 @@ class Report extends CI_Controller
             ];
         }
 
+        // Calculate total working days (Monday-Saturday, excluding National Holidays)
+        $total_days = 0;
+        if (!empty($start_date) && !empty($end_date)) {
+            $period = new DatePeriod(
+                new DateTime($start_date),
+                new DateInterval('P1D'),
+                (new DateTime($end_date))->modify('+1 day')
+            );
+
+            foreach ($period as $date) {
+                $dayOfWeek = $date->format('w'); // 0 = Sunday
+                $dateStr = $date->format('Y-m-d');
+
+                $isSunday = ($dayOfWeek == 0);
+                $isNationalHoliday = isset($day_types[$dateStr]) && $day_types[$dateStr] === 'National Holiday';
+
+                if (!$isSunday && !$isNationalHoliday) {
+                    $total_days++;
+                }
+            }
+        }
+
         // Calculate summary
         $summary = [
+            'total_days' => $total_days,
             'present' => 0,
             'absent' => 0,
             'national_holiday' => 0,
