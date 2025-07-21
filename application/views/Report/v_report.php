@@ -94,7 +94,7 @@
                         $weekday = date('w', strtotime($date));
                         $isWeekend = ($weekday == 0);
                         $isSaturday = ($weekday == 6);
-                        $isNationalHoliday = !$isWeekend && isset($absent_count_by_date[$date]) && $absent_count_by_date[$date] > 8;
+                        $isNationalHoliday = $row->holiday_type === 'National Holiday';
 
                         // Time thresholds
                         $workStart = ($isSaturday ? '08:10:00' : '08:10:00');
@@ -103,7 +103,7 @@
                         $isLate = $checkIn && $checkIn > $workStart;
                         $isEarlyLeave = $checkOut && $checkOut < $workEnd;
 
-                        // Hitung keterlambatan dan pulang awal (dalam menit)
+                        // Calculate lateness and early leave in minutes
                         $lateMinutes = 0;
                         $earlyLeaveMinutes = 0;
 

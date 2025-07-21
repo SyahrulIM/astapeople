@@ -21,102 +21,116 @@ class Report extends CI_Controller
         $presence_data = [];
 
         if (!empty($start_date) && !empty($end_date)) {
-            $subquery = "
-                SELECT MAX(pp.created_date) AS created_date, pd.idppl_employee, pd.date
-                FROM ppl_presence_detail pd
-                JOIN ppl_presence pp ON pp.idppl_presence = pd.idppl_presence
-                WHERE pd.date >= '$start_date' AND pd.date <= '$end_date'
-                GROUP BY pd.idppl_employee, pd.date
-            ";
+            // Get the most recent record for each employee per date
+            $subquery = $this->db
+                ->select('MAX(pp.created_date) AS max_created, pd.idppl_employee, pd.date')
+                ->from('ppl_presence_detail pd')
+                ->join('ppl_presence pp', 'pp.idppl_presence = pd.idppl_presence')
+                ->where('pd.date >=', $start_date)
+                ->where('pd.date <=', $end_date)
+                ->group_by('pd.idppl_employee, pd.date')
+                ->get_compiled_select();
 
-            $this->db->select('pe.name, pd.date, pd.check_in, pd.check_out');
-            $this->db->from('ppl_presence_detail pd');
-            $this->db->join('ppl_presence pp', 'pp.idppl_presence = pd.idppl_presence');
-            $this->db->join('ppl_employee pe', 'pe.idppl_employee = pd.idppl_employee');
-            $this->db->join("($subquery) latest", 'latest.idppl_employee = pd.idppl_employee AND latest.date = pd.date AND latest.created_date = pp.created_date');
+            // Main query with ONLY_FULL_GROUP_BY compatibility
+            $this->db
+                ->select('
+                pe.name,
+                pd.date,
+                MAX(pd.check_in) AS check_in,
+                MAX(pd.check_out) AS check_out
+            ')
+                ->from('ppl_presence_detail pd')
+                ->join('ppl_presence pp', 'pp.idppl_presence = pd.idppl_presence')
+                ->join('ppl_employee pe', 'pe.idppl_employee = pd.idppl_employee')
+                ->join("($subquery) latest", 'latest.idppl_employee = pd.idppl_employee AND latest.date = pd.date AND latest.max_created = pp.created_date')
+                ->group_by('pe.name, pd.date') // Include all non-aggregated columns
+                ->order_by('pe.name', 'ASC')
+                ->order_by('pd.date', 'ASC');
 
             if (!empty($employee_id)) {
                 $this->db->where('pd.idppl_employee', $employee_id);
             }
 
-            $this->db->order_by('pe.name', 'ASC');
-            $this->db->order_by('pd.date', 'ASC');
-
             $presence_data = $this->db->get()->result();
         }
 
-        // Get all employees for filter
-        $employees = $this->db->get('ppl_employee')->result();
-
-        // Calculate total absence count per date
-        $absent_count_by_date = [];
-
-        foreach ($presence_data as $row) {
-            if (empty($row->check_in) && empty($row->check_out)) {
-                $date = $row->date;
-                if (!isset($absent_count_by_date[$date])) {
-                    $absent_count_by_date[$date] = 1;
-                } else {
-                    $absent_count_by_date[$date]++;
-                }
-            }
+        // Get total employees (for national holiday calculation)
+        $total_employees = $this->db->count_all('ppl_employee');
+        if (!empty($employee_id)) {
+            $total_employees = 1; // If filtering by single employee
         }
 
-        // Determine holiday type by date
-        $holiday_by_date = [];
-
+        // Calculate absent count per date
+        $absent_count = [];
         foreach ($presence_data as $row) {
             $date = $row->date;
-            $day_of_week = date('w', strtotime($date)); // 0=Sunday, ..., 6=Saturday
+            if (empty($row->check_in) && empty($row->check_out)) {
+                $absent_count[$date] = ($absent_count[$date] ?? 0) + 1;
+            }
+        }
 
-            if (!isset($holiday_by_date[$date])) {
-                if ($day_of_week == 0) {
-                    $holiday_by_date[$date] = 'Weekend';
-                } elseif (isset($absent_count_by_date[$date]) && $absent_count_by_date[$date] > 5) {
-                    $holiday_by_date[$date] = 'National Holiday';
+        // Determine day types (Weekend/National Holiday/Workday)
+        $day_types = [];
+        foreach ($presence_data as $row) {
+            $date = $row->date;
+            if (!isset($day_types[$date])) {
+                $day_of_week = date('w', strtotime($date));
+
+                if ($day_of_week == 0) { // Sunday
+                    $day_types[$date] = 'Weekend';
+                } elseif (isset($absent_count[$date]) && $absent_count[$date] >= ($total_employees * 0.8)) {
+                    $day_types[$date] = 'National Holiday';
                 } else {
-                    $holiday_by_date[$date] = 'Workday';
+                    $day_types[$date] = 'Workday';
                 }
             }
         }
 
-        // Append lateness and early leave flags to each row
-        foreach ($presence_data as &$row) {
-            $day_of_week = date('w', strtotime($row->date));
-            $standard_in = null;
-            $standard_out = null;
+        // Process data for view (add late/early flags)
+        $processed_data = [];
+        foreach ($presence_data as $row) {
+            $date = $row->date;
+            $day_of_week = date('w', strtotime($date));
 
-            if ($day_of_week >= 1 && $day_of_week <= 5) { // Monday to Friday
-                $standard_in = '08:10:00';
-                $standard_out = '16:30:00';
-            } elseif ($day_of_week == 6) { // Saturday
+            // Set work hours based on day of week
+            if ($day_of_week == 6) { // Saturday
                 $standard_in = '08:10:00';
                 $standard_out = '13:00:00';
+            } elseif ($day_of_week >= 1 && $day_of_week <= 5) { // Weekdays
+                $standard_in = '08:10:00';
+                $standard_out = '16:30:00';
+            } else { // Sunday
+                $standard_in = null;
+                $standard_out = null;
             }
 
-            $row->is_late = (!empty($row->check_in) && $row->check_in > $standard_in);
-            $row->left_early = (!empty($row->check_out) && $row->check_out < $standard_out);
-            $row->holiday_type = $holiday_by_date[$row->date] ?? 'Workday';
+            $processed_data[] = (object)[
+                'name' => $row->name,
+                'date' => $date,
+                'check_in' => $row->check_in,
+                'check_out' => $row->check_out,
+                'is_late' => (!empty($row->check_in) && $standard_in && $row->check_in > $standard_in),
+                'left_early' => (!empty($row->check_out) && $standard_out && $row->check_out < $standard_out),
+                'holiday_type' => $day_types[$date] ?? 'Workday'
+            ];
         }
 
-        // Summary Counters
+        // Calculate summary
         $summary = [
             'present' => 0,
             'absent' => 0,
             'national_holiday' => 0,
-            'incomplete' => 0
+            'incomplete' => 0,
+            'late' => 0,
+            'early_leave' => 0
         ];
 
-        // Hitung summary
-        foreach ($presence_data as $row) {
-            $isWeekend = $row->holiday_type === 'Weekend';
-            $isNationalHoliday = $row->holiday_type === 'National Holiday';
-
-            if ($isWeekend) {
-                continue; // Skip weekend
+        foreach ($processed_data as $row) {
+            if ($row->holiday_type === 'Weekend') {
+                continue;
             }
 
-            if ($isNationalHoliday) {
+            if ($row->holiday_type === 'National Holiday') {
                 $summary['national_holiday']++;
             } elseif (empty($row->check_in) && empty($row->check_out)) {
                 $summary['absent']++;
@@ -124,39 +138,23 @@ class Report extends CI_Controller
                 $summary['incomplete']++;
             } else {
                 $summary['present']++;
+                if ($row->is_late) $summary['late']++;
+                if ($row->left_early) $summary['early_leave']++;
             }
         }
 
-        // Hitung jumlah hari kerja: Senin–Sabtu (0 = Minggu, 6 = Sabtu), kecuali National Holiday
-        $total_days = 0;
+        // Get all employees for filter dropdown
+        $employees = $this->db->get('ppl_employee')->result();
 
-        $period = new DatePeriod(
-            new DateTime($start_date),
-            new DateInterval('P1D'),
-            (new DateTime($end_date))->modify('+1 day')
-        );
-
-        foreach ($period as $date) {
-            $dayOfWeek = $date->format('w'); // 0 = Minggu
-            $dateStr = $date->format('Y-m-d');
-
-            $isSunday = ($dayOfWeek == 0);
-            $isNationalHoliday = isset($holiday_by_date[$dateStr]) && $holiday_by_date[$dateStr] === 'National Holiday';
-
-            if (!$isSunday && !$isNationalHoliday) {
-                $total_days++;
-            }
-        }
-
+        // Prepare data for view
         $data = [
-            'title' => 'Report',
-            'presence' => $presence_data,
+            'title' => 'Attendance Report',
+            'presence' => $processed_data,
             'employee' => $employees,
             'selected_employee' => $employee_id,
-            'absent_count_by_date' => $absent_count_by_date,
-            'holiday_by_date' => $holiday_by_date,
             'summary' => $summary,
-            'total_days' => $total_days
+            'start_date' => $start_date,
+            'end_date' => $end_date
         ];
 
         $this->load->view('theme/v_head', $data);
