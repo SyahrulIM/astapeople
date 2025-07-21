@@ -122,6 +122,7 @@ class Presence extends CI_Controller
                         'date' => $date,
                         'check_in' => $check_in,
                         'check_out' => $check_out,
+                        'is_permission' => 0,
                         'status' => 1
                     ]);
                 }

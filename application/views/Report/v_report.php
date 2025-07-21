@@ -69,9 +69,43 @@
         </div>
     </div>
 
+    <!-- Start Permit Modal -->
+    <div class="modal fade" id="permitModal" tabindex="-1" aria-labelledby="permitModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="permitModalLabel">Submit Permit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="permitForm" method="post" action="<?= base_url('report/permit') ?>">
+                    <div class="modal-body">
+                        <input type="hidden" name="employee_id" id="modalEmployeeId">
+                        <input type="hidden" name="date" id="modalDate">
+
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">Reason</label>
+                            <select class="form-select" id="reason" name="reason" required>
+                                <option value="">-- Select Reason --</option>
+                                <option value="Sick">Sick</option>
+                                <option value="Personal">Personal</option>
+                                <option value="Cuti">Cuti</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- End -->
+
     <div class="row">
         <div class="col">
             <table id="tableReport" class="display" style="width:100%">
+                <!-- In the table header -->
                 <thead>
                     <tr>
                         <th>No</th>
@@ -81,9 +115,14 @@
                         <th>Check Out</th>
                         <th>Late(Min)</th>
                         <th>Early Leave(Min)</th>
+                        <th>Permission</th>
+                        <th>Reason</th>
                         <th>Status</th>
+                        <td>Action</td>
                     </tr>
                 </thead>
+
+                <!-- In the table body -->
                 <tbody>
                     <?php
                     $no = 1;
@@ -91,6 +130,8 @@
                         $date = $row->date;
                         $checkIn = $row->check_in;
                         $checkOut = $row->check_out;
+                        $reason = $row->reason;
+                        $isPermission = $row->is_permission;
                         $weekday = date('w', strtotime($date));
                         $isWeekend = ($weekday == 0);
                         $isSaturday = ($weekday == 6);
@@ -119,27 +160,51 @@
                             <td><?= $no++ ?></td>
                             <td><?= $row->name ?></td>
                             <td><?= $date ?></td>
-                            <td><?= $checkIn ?></td>
-                            <td><?= $checkOut ?></td>
-                            <td><?= $lateMinutes > 0 ? round($lateMinutes) : '' ?></td>
-                            <td><?= $earlyLeaveMinutes > 0 ? round($earlyLeaveMinutes) : '' ?></td>
+                            <td><?= $checkIn ?: '-' ?></td>
+                            <td><?= $checkOut ?: '-' ?></td>
+                            <td><?= $lateMinutes > 0 ? round($lateMinutes) : '-' ?></td>
+                            <td><?= $earlyLeaveMinutes > 0 ? round($earlyLeaveMinutes) : '-' ?></td>
+                            <td>
+                                <?php if ($row->is_permission == 1) : ?>
+                                    <span class="badge bg-success">Yes</span>
+                                <?php else : ?>
+                                    <span class="badge bg-danger">No</span>
+                                <?php endif; ?>
+                            </td>
+                            <td><?= !empty($reason) ? $reason : '-' ?></td>
                             <td>
                                 <?php if ($isWeekend) : ?>
                                     <span class="badge bg-secondary">Weekend</span>
                                 <?php elseif ($isNationalHoliday) : ?>
-                                    <span class="badge bg-warning text-dark">National Holiday</span>
+                                    <span class="badge bg-warning">National Holiday</span>
                                 <?php elseif (empty($checkIn) && empty($checkOut)) : ?>
                                     <span class="badge bg-danger">Absent</span>
                                 <?php elseif (empty($checkIn) || empty($checkOut)) : ?>
-                                    <span class="badge bg-danger">Incomplete Attendance</span>
+                                    <span class="badge bg-danger">Incomplete</span>
                                 <?php elseif ($isLate && $isEarlyLeave) : ?>
-                                    <span class="badge bg-warning text-dark">Late & Early Leave</span>
+                                    <span class="badge bg-warning">Late & Early Leave</span>
                                 <?php elseif ($isLate) : ?>
-                                    <span class="badge bg-info text-dark">Late</span>
+                                    <span class="badge bg-info">Late</span>
                                 <?php elseif ($isEarlyLeave) : ?>
-                                    <span class="badge bg-info text-dark">Early Leave</span>
+                                    <span class="badge bg-info">Early Leave</span>
                                 <?php else : ?>
                                     <span class="badge bg-success">Present</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if (
+                                    ($isWeekend === false && $isNationalHoliday === false) &&
+                                    (
+                                        (empty($checkIn) && empty($checkOut)) || // Absent
+                                        (empty($checkIn) || empty($checkOut)) || // Incomplete
+                                        $isLate || $isEarlyLeave // Late, Early Leave, Late & Early Leave
+                                    )
+                                ) : ?>
+                                    <button type="button" class="btn btn-success btn-permit" data-employee-id="<?= $row->idppl_employee ?>" data-date="<?= $date ?>">
+                                        Permit
+                                    </button>
+                                <?php else : ?>
+                                    -
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -160,8 +225,10 @@
 
 <script>
     $(document).ready(function() {
-        new DataTable('#tableReport', {
-            responsive: true,
+        // Initialize DataTable
+        var table = new DataTable('#tableReport', {
+            responsive: false,
+            scrollX: true,
             layout: {
                 bottomEnd: {
                     paging: {
@@ -169,6 +236,53 @@
                     }
                 }
             }
+        });
+
+        // Handle permit button click
+        $('#tableReport').on('click', '.btn-permit', function() {
+            var employeeId = $(this).data('employee-id');
+            var employeeName = $(this).closest('tr').find('td:eq(1)').text();
+            var date = $(this).data('date');
+
+            // Set values in modal
+            $('#modalEmployeeId').val(employeeId);
+            $('#modalDate').val(date);
+            $('#permitModal .modal-title').text('Submit Permit for ' + employeeName + ' - ' + date);
+
+            // Show modal
+            var modal = new bootstrap.Modal(document.getElementById('permitModal'));
+            modal.show();
+        });
+
+        // Handle form submission
+        $('#permitForm').on('submit', function(e) {
+            e.preventDefault();
+
+            // Show loading state
+            var submitBtn = $(this).find('button[type="submit"]');
+            submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                dataType: 'json',
+                success: function(response) {
+                    if (response.status === 'success') {
+                        alert(response.message);
+                        $('#permitModal').modal('hide');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while submitting the permit.');
+                },
+                complete: function() {
+                    submitBtn.prop('disabled', false).text('Submit');
+                }
+            });
         });
     });
 </script>

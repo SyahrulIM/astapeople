@@ -23,29 +23,32 @@ class Report extends CI_Controller
         if (!empty($start_date) && !empty($end_date)) {
             // Get the most recent record for each employee per date
             $subquery = $this->db
-                ->select('MAX(pp.created_date) AS max_created, pd.idppl_employee, pd.date')
+                ->select('MAX(pp.created_date) AS max_created, pd.idppl_employee, pd.`date`')
                 ->from('ppl_presence_detail pd')
                 ->join('ppl_presence pp', 'pp.idppl_presence = pd.idppl_presence')
-                ->where('pd.date >=', $start_date)
-                ->where('pd.date <=', $end_date)
-                ->group_by('pd.idppl_employee, pd.date')
+                ->where('pd.`date` >=', $start_date)
+                ->where('pd.`date` <=', $end_date)
+                ->group_by('pd.idppl_employee, pd.`date`')
                 ->get_compiled_select();
 
-            // Main query with ONLY_FULL_GROUP_BY compatibility
+            // Main query with proper escaping and GROUP BY
             $this->db
                 ->select('
-                pe.name,
-                pd.date,
-                MAX(pd.check_in) AS check_in,
-                MAX(pd.check_out) AS check_out
-            ')
+                    pe.name,
+                    pd.idppl_employee,
+                    pd.`date`,
+                    MAX(pd.check_in) AS check_in,
+                    MAX(pd.check_out) AS check_out,
+                    MAX(pd.reason) AS reason,
+                    MAX(pd.is_permission) AS is_permission
+                ')
                 ->from('ppl_presence_detail pd')
                 ->join('ppl_presence pp', 'pp.idppl_presence = pd.idppl_presence')
                 ->join('ppl_employee pe', 'pe.idppl_employee = pd.idppl_employee')
-                ->join("($subquery) latest", 'latest.idppl_employee = pd.idppl_employee AND latest.date = pd.date AND latest.max_created = pp.created_date')
-                ->group_by('pe.name, pd.date') // Include all non-aggregated columns
+                ->join("($subquery) latest", 'latest.idppl_employee = pd.idppl_employee AND latest.`date` = pd.`date` AND latest.max_created = pp.created_date')
+                ->group_by('pe.name, pd.idppl_employee, pd.`date`')  // Single GROUP BY clause
                 ->order_by('pe.name', 'ASC')
-                ->order_by('pd.date', 'ASC');
+                ->order_by('pd.`date`', 'ASC');
 
             if (!empty($employee_id)) {
                 $this->db->where('pd.idppl_employee', $employee_id);
@@ -106,9 +109,12 @@ class Report extends CI_Controller
 
             $processed_data[] = (object)[
                 'name' => $row->name,
+                'idppl_employee' => $row->idppl_employee,
                 'date' => $date,
                 'check_in' => $row->check_in,
                 'check_out' => $row->check_out,
+                'reason' => $row->reason,
+                'is_permission' => $row->is_permission,
                 'is_late' => (!empty($row->check_in) && $standard_in && $row->check_in > $standard_in),
                 'left_early' => (!empty($row->check_out) && $standard_out && $row->check_out < $standard_out),
                 'holiday_type' => $day_types[$date] ?? 'Workday'
@@ -182,5 +188,92 @@ class Report extends CI_Controller
 
         $this->load->view('theme/v_head', $data);
         $this->load->view('Report/v_report');
+    }
+
+    public function permit()
+    {
+        // Check if this is an AJAX request
+        if (!$this->input->is_ajax_request()) {
+            show_404();
+        }
+
+        // Load form validation library
+        $this->load->library('form_validation');
+
+        // Set validation rules
+        $this->form_validation->set_rules('employee_id', 'Employee ID', 'required|numeric');
+        $this->form_validation->set_rules('date', 'Date', 'required');
+        $this->form_validation->set_rules('reason', 'Reason', 'required');
+
+        // Run validation
+        if ($this->form_validation->run() === FALSE) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => validation_errors()
+            ]);
+            return;
+        }
+
+        // Get POST data
+        $employee_id = $this->input->post('employee_id');
+        $date = $this->input->post('date');
+        $reason = $this->input->post('reason');
+
+        // Prepare update data
+        $update_data = [
+            'is_permission' => 1,
+            'reason' => $reason,
+            'status' => 1 // Assuming 1 means approved, adjust as needed
+        ];
+
+        // First find the presence_detail record
+        $this->db->where('idppl_employee', $employee_id);
+        $this->db->where('date', $date);
+        $query = $this->db->get('ppl_presence_detail');
+
+        if ($query->num_rows() > 0) {
+            // Record exists, update it
+            $this->db->where('idppl_employee', $employee_id);
+            $this->db->where('date', $date);
+            $result = $this->db->update('ppl_presence_detail', $update_data);
+
+            if ($result) {
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => 'Permit submitted successfully'
+                ]);
+            } else {
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Failed to update permit'
+                ]);
+            }
+        } else {
+            // Record doesn't exist, create new one
+            $insert_data = [
+                'idppl_employee' => $employee_id,
+                'date' => $date,
+                'check_in' => null,
+                'check_out' => null,
+                'reason' => $reason,
+                'is_permission' => 1,
+                'status' => 1,
+                // You might need to set idppl_presence here if required
+            ];
+
+            $result = $this->db->insert('ppl_presence_detail', $insert_data);
+
+            if ($result) {
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => 'Permit created successfully'
+                ]);
+            } else {
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Failed to create permit'
+                ]);
+            }
+        }
     }
 }
