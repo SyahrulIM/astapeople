@@ -2,6 +2,7 @@
 $start = $start ?? null;
 $end = $end ?? null;
 $dates = [];
+$show_periode = $this->input->get('show_periode'); // Ambil status checkbox
 
 if ($start && $end) {
     $period = new DatePeriod(
@@ -37,6 +38,13 @@ if ($start && $end) {
                     <label for="absensi_end" class="form-label">Attendance Date (End)</label>
                     <input type="date" id="absensi_end" name="absensi_end" class="form-control" value="<?= $this->input->get('absensi_end') ?>" required>
                 </div>
+                <div class="col-md-3">
+                    <label for="togglePeriodeColumns" class="form-label">Tabel Columns</label>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="togglePeriodeColumns" name="show_periode" value="1" <?= $show_periode == '1' ? 'checked' : '' ?>>
+                        <label class="form-check-label" for="togglePeriodeColumns">Periode Dates</label>
+                    </div>
+                </div>
                 <div class="col-md-3 d-flex align-items-end">
                     <div>
                         <button type="submit" class="btn btn-primary me-2">Filter</button>
@@ -55,9 +63,11 @@ if ($start && $end) {
                     <tr>
                         <th>No</th>
                         <th>Full Name</th>
-                        <?php foreach ($dates as $d) : ?>
-                            <th><?= date('d M', strtotime($d)) ?></th>
-                        <?php endforeach; ?>
+                        <?php if ($show_periode == '1') : ?>
+                            <?php foreach ($dates as $d) : ?>
+                                <th><?= date('d M', strtotime($d)) ?></th>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                         <th>Total Attendance</th>
                         <th>Meal Allowance (Rp)</th>
                         <th>Total Allowance (Rp)</th>
@@ -69,9 +79,11 @@ if ($start && $end) {
                             <tr>
                                 <td><?= $no++ ?></td>
                                 <td><?= $emp['name'] ?></td>
-                                <?php foreach ($dates as $d) : ?>
-                                    <td class="text-center"><?= $emp['presence'][$d] ?? '-' ?></td>
-                                <?php endforeach; ?>
+                                <?php if ($show_periode == '1') : ?>
+                                    <?php foreach ($dates as $d) : ?>
+                                        <td class="text-center"><?= $emp['presence'][$d] ?? '-' ?></td>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                                 <td class="text-center"><?= $emp['total_attend'] ?></td>
                                 <td class="text-end">20,000</td>
                                 <td class="text-end"><?= number_format($emp['total_attend'] * 20000, 0, ',', '.') ?></td>
@@ -83,25 +95,21 @@ if ($start && $end) {
         </div>
     </div>
 </div>
-</div>
-</div>
-<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-<!-- 2. DataTables JS -->
+
+<!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
 <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
 <script src="https://cdn.datatables.net/rowreorder/1.5.0/js/dataTables.rowReorder.js"></script>
 <script src="https://cdn.datatables.net/rowreorder/1.5.0/js/rowReorder.dataTables.js"></script>
 <script src="https://cdn.datatables.net/responsive/3.0.4/js/dataTables.responsive.js"></script>
 <script src="https://cdn.datatables.net/responsive/3.0.4/js/responsive.dataTables.js"></script>
-<!-- 3. Bootstrap bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-<!-- 4. Core theme JS -->
-<script src="<?php echo base_url(); ?>js/scripts.js"></script>
+<script src="<?= base_url(); ?>js/scripts.js"></script>
 
-<!-- Initialize DataTables AFTER all scripts are loaded -->
+<!-- Custom JS -->
 <script>
     $(document).ready(function() {
-        new DataTable('#tableMeal', {
+        const table = new DataTable('#tableMeal', {
             responsive: false,
             scrollX: true,
             layout: {
@@ -112,8 +120,17 @@ if ($start && $end) {
                 }
             }
         });
+
+        // Handle checkbox toggle
+        $('#togglePeriodeColumns').on('change', function() {
+            const isVisible = $(this).is(':checked');
+            $('.periode-column').toggle(isVisible);
+        });
+
+        // Set initial visibility based on server value
+        const isPeriodeVisible = <?= $show_periode == '1' ? 'true' : 'false' ?>;
+        if (!isPeriodeVisible) {
+            $('.periode-column').hide();
+        }
     });
 </script>
-</body>
-
-</html>
