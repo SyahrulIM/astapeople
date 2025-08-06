@@ -31,7 +31,6 @@ class Report extends CI_Controller
                 ->group_by('pd.idppl_employee, pd.`date`')
                 ->get_compiled_select();
 
-            // Main query with proper escaping and GROUP BY
             $this->db
                 ->select('
                     pe.name,
@@ -40,15 +39,18 @@ class Report extends CI_Controller
                     MAX(pd.check_in) AS check_in,
                     MAX(pd.check_out) AS check_out,
                     MAX(pd.reason) AS reason,
-                    MAX(pd.is_permission) AS is_permission
+                    MAX(pd.is_permission) AS is_permission,
+                    to.reason AS time_off_reason
                 ')
                 ->from('ppl_presence_detail pd')
                 ->join('ppl_presence pp', 'pp.idppl_presence = pd.idppl_presence')
                 ->join('ppl_employee pe', 'pe.idppl_employee = pd.idppl_employee')
+                ->join('time_off to', 'to.iduser = pe.iduser AND to.date = pd.date', 'left')
                 ->join("($subquery) latest", 'latest.idppl_employee = pd.idppl_employee AND latest.`date` = pd.`date` AND latest.max_created = pp.created_date')
-                ->group_by('pe.name, pd.idppl_employee, pd.`date`')  // Single GROUP BY clause
+                ->group_by('pe.name, pd.idppl_employee, pd.`date`, to.reason')
                 ->order_by('pe.name', 'ASC')
                 ->order_by('pd.`date`', 'ASC');
+
 
             if (!empty($employee_id)) {
                 $this->db->where('pd.idppl_employee', $employee_id);
@@ -121,43 +123,54 @@ class Report extends CI_Controller
             ];
         }
 
-        // Calculate total working days (Monday-Saturday, excluding National Holidays)
+        // Calculate total days in the month (based on start_date)
         $total_days = 0;
-        if (!empty($start_date) && !empty($end_date)) {
-            $period = new DatePeriod(
-                new DateTime($start_date),
-                new DateInterval('P1D'),
-                (new DateTime($end_date))->modify('+1 day')
-            );
+        if (!empty($start_date)) {
+            // Get month and year from start_date
+            $month = date('m', strtotime($start_date));
+            $year = date('Y', strtotime($start_date));
 
-            foreach ($period as $date) {
-                $dayOfWeek = $date->format('w'); // 0 = Sunday
-                $dateStr = $date->format('Y-m-d');
+            // Get number of days in the month
+            $days_in_month = cal_days_in_month(CAL_GREGORIAN, $month, $year);
 
-                $isSunday = ($dayOfWeek == 0);
-                $isNationalHoliday = isset($day_types[$dateStr]) && $day_types[$dateStr] === 'National Holiday';
+            // Calculate total workdays (excluding Sundays and national holidays)
+            for ($day = 1; $day <= $days_in_month; $day++) {
+                $date = date('Y-m-d', strtotime("$year-$month-$day"));
+                $dayOfWeek = date('w', strtotime($date)); // 0 = Sunday
 
-                if (!$isSunday && !$isNationalHoliday) {
-                    $total_days++;
+                // Skip Sundays
+                if ($dayOfWeek == 0) continue;
+
+                // Skip national holidays
+                if (isset($day_types[$date]) && $day_types[$date] === 'National Holiday') {
+                    continue;
                 }
+
+                $total_days++;
             }
         }
 
         // Calculate summary
         $summary = [
             'total_days' => $total_days,
-            'present' => 0,
-            'absent' => 0,
             'national_holiday' => 0,
+            'absent' => 0,
             'incomplete' => 0,
+            'present' => 0,
             'late' => 0,
-            'early_leave' => 0
+            'early_leave' => 0,
+            'staff' => [], // untuk menampung ID karyawan unik
         ];
+
+        $unique_staff = [];
 
         foreach ($processed_data as $row) {
             if ($row->holiday_type === 'Weekend') {
                 continue;
             }
+
+            // Collect unique employee IDs
+            $unique_staff[$row->idppl_employee] = true;
 
             if ($row->holiday_type === 'National Holiday') {
                 $summary['national_holiday']++;
@@ -172,7 +185,12 @@ class Report extends CI_Controller
             }
         }
 
+        // Assign distinct staff count
+        $summary['staff'] = count($unique_staff);
+
         // Get all employees for filter dropdown
+        $this->db->select('ppl_employee.idppl_employee as idppl_employee, ppl_employee.name as name');
+        $this->db->order_by('name', 'ASC');
         $employees = $this->db->get('ppl_employee')->result();
 
         // Prepare data for view

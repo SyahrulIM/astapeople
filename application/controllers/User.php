@@ -159,11 +159,24 @@ class User extends CI_Controller
     public function deleteUser()
     {
         $iduser = $this->input->get('iduser');
-    
+
         if ($iduser != 4) {
             $this->db->where('iduser', $iduser)->set('status', 0)->update('user');
         }
-    
+
         redirect('user');
-    }    
+    }
+
+    public function verifyUser()
+    {
+        $iduser = $this->input->get('iduser');
+
+        // Validasi jika iduser tidak kosong
+        if ($iduser) {
+            $this->db->where('iduser', $iduser);
+            $this->db->update('user', ['is_verify' => 1]);
+        }
+
+        redirect('user');
+    }
 }

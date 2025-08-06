@@ -50,16 +50,12 @@
                     <p><?= $summary['total_days'] ?? 0 ?></p>
                 </div>
                 <div class="col">
-                    <h5>Present</h5>
-                    <p><?= $summary['present'] ?? 0 ?></p>
+                    <h5>Staff</h5>
+                    <p><?= $summary['staff'] ?? 0 ?></p>
                 </div>
                 <div class="col">
                     <h5>Absent</h5>
                     <p><?= $summary['absent'] ?? 0 ?></p>
-                </div>
-                <div class="col">
-                    <h5>National Holiday</h5>
-                    <p><?= $summary['national_holiday'] ?? 0 ?></p>
                 </div>
                 <div class="col">
                     <h5>Incomplete Attendance</h5>
@@ -116,10 +112,9 @@
                         <th>Check Out</th>
                         <th>Late(Min)</th>
                         <th>Early Leave(Min)</th>
-                        <th>Permission</th>
                         <th>Reason</th>
                         <th>Status</th>
-                        <td>Action</td>
+                        <!-- <td>Action</td> -->
                     </tr>
                 </thead>
 
@@ -165,34 +160,33 @@
                             <td><?= $checkOut ?: '-' ?></td>
                             <td><?= $lateMinutes > 0 ? round($lateMinutes) : '-' ?></td>
                             <td><?= $earlyLeaveMinutes > 0 ? round($earlyLeaveMinutes) : '-' ?></td>
-                            <td>
-                                <?php if ($row->is_permission == 1) : ?>
-                                    <span class="badge bg-success">Yes</span>
-                                <?php else : ?>
-                                    <span class="badge bg-danger">No</span>
-                                <?php endif; ?>
-                            </td>
-                            <td><?= !empty($reason) ? $reason : '-' ?></td>
+                            <?php if (empty($reason)) { ?>
+                                <td>-</td>
+                            <?php } elseif ($reason === 'Dinas') { ?>
+                                <td><span class="badge text-bg-success">Dinas</span></td>
+                            <?php } else { ?>
+                                <td><span class="badge text-bg-danger"><?= $reason; ?></span></td>
+                            <?php } ?>
                             <td>
                                 <?php if ($isWeekend) : ?>
-                                    <span class="badge bg-secondary">Weekend</span>
+                                    <span class="badge bg-danger">Minggu/Libur</span>
                                 <?php elseif ($isNationalHoliday) : ?>
-                                    <span class="badge bg-warning">National Holiday</span>
+                                    <span class="badge bg-danger">National Holiday</span>
                                 <?php elseif (empty($checkIn) && empty($checkOut)) : ?>
                                     <span class="badge bg-danger">Absent</span>
                                 <?php elseif (empty($checkIn) || empty($checkOut)) : ?>
                                     <span class="badge bg-danger">Incomplete</span>
                                 <?php elseif ($isLate && $isEarlyLeave) : ?>
-                                    <span class="badge bg-warning">Late & Early Leave</span>
+                                    <span class="badge bg-danger">Late & Early Leave</span>
                                 <?php elseif ($isLate) : ?>
-                                    <span class="badge bg-info">Late</span>
+                                    <span class="badge bg-danger">Late</span>
                                 <?php elseif ($isEarlyLeave) : ?>
-                                    <span class="badge bg-info">Early Leave</span>
+                                    <span class="badge bg-danger">Early Leave</span>
                                 <?php else : ?>
                                     <span class="badge bg-success">Present</span>
                                 <?php endif; ?>
                             </td>
-                            <td>
+                            <!-- <td>
                                 <?php if (
                                     ($isWeekend === false && $isNationalHoliday === false) &&
                                     (
@@ -201,13 +195,13 @@
                                         $isLate || $isEarlyLeave // Late, Early Leave, Late & Early Leave
                                     )
                                 ) : ?>
-                                    <button type="button" class="btn btn-success btn-permit" data-employee-id="<?= $row->idppl_employee ?>" data-date="<?= $date ?>">
+                                    <button type="button" class="btn btn-success btn-permit" data-employee-id="<?= $row->idppl_employee ?>" data-date="<?= $date ?>" data-reason="<?= $reason ?>">
                                         Permit
                                     </button>
                                 <?php else : ?>
                                     -
                                 <?php endif; ?>
-                            </td>
+                            </td> -->
                         </tr>
                     <?php } ?>
                 </tbody>
@@ -244,7 +238,7 @@
             var employeeId = $(this).data('employee-id');
             var employeeName = $(this).closest('tr').find('td:eq(1)').text();
             var date = $(this).data('date');
-            var existingReason = $(this).closest('tr').find('td:eq(8)').text().trim(); // Get existing reason from table
+            var existingReason = $(this).data('reason');
 
             // Set values in modal
             $('#modalEmployeeId').val(employeeId);

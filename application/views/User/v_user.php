@@ -12,17 +12,17 @@
 
                 <!-- Flash messages -->
                 <?php if ($this->session->flashdata('error')) : ?>
-                <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                    <?= $this->session->flashdata('error') ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                        <?= $this->session->flashdata('error') ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                 <?php endif; ?>
 
                 <?php if ($this->session->flashdata('success')) : ?>
-                <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                    <?= $this->session->flashdata('success') ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                        <?= $this->session->flashdata('success') ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                 <?php endif; ?>
                 <!-- End -->
 
@@ -61,7 +61,7 @@
                                         <select class="form-select" id="inputRole" name="inputRole">
                                             <option selected disabled>Pilih Role</option>
                                             <?php foreach ($role as $rkey => $rvalue) { ?>
-                                            <option value="<?php echo $rvalue->idrole; ?>"><?php echo $rvalue->nama_role; ?></option>
+                                                <option value="<?php echo $rvalue->idrole; ?>"><?php echo $rvalue->nama_role; ?></option>
                                             <?php } ?>
                                         </select>
                                     </div>
@@ -109,7 +109,7 @@
                                         <label for="editRole" class="form-label">Role</label>
                                         <select class="form-select" id="editRole" name="editRole">
                                             <?php foreach ($role as $rkey => $rvalue) { ?>
-                                            <option value="<?php echo $rvalue->idrole; ?>"><?php echo $rvalue->nama_role; ?></option>
+                                                <option value="<?php echo $rvalue->idrole; ?>"><?php echo $rvalue->nama_role; ?></option>
                                             <?php } ?>
                                         </select>
                                     </div>
@@ -120,6 +120,26 @@
                             </div>
                         </div>
                     </form>
+                </div>
+                <!-- End -->
+
+                <!-- Modal Konfirmasi Verifikasi -->
+                <div class="modal fade" id="verifyModal" tabindex="-1" aria-labelledby="verifyModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Konfirmasi Verifikasi</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Apakah Anda yakin ingin memverifikasi pengguna <strong id="namaUserVerify"></strong>?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <a href="#" class="btn btn-success" id="btnConfirmVerify">Ya, Verifikasi</a>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <!-- End -->
                 <div class="row">
@@ -138,26 +158,32 @@
                             </thead>
                             <tbody>
                                 <?php foreach ($user as $ukey => $uvalue) { ?>
-                                <tr>
-                                    <td><?php echo $ukey + 1; ?></td>
-                                    <td><?php echo $uvalue->full_name; ?></td>
-                                    <td><?php echo $uvalue->username; ?></td>
-                                    <td><?php echo $uvalue->email; ?></td>
-                                    <td><img src="<?php echo base_url('assets/image/user/' . $uvalue->foto); ?>" alt="<?php echo $uvalue->foto; ?>" width="100px" height="100px" style="border-radius: 50%; object-fit: cover;"></td>
-                                    <td><?php echo $uvalue->nama_role; ?></td>
-                                    <td>
-                                        <?php if ($uvalue->iduser != 4) { ?>
-                                        <button type="button" class="btn btn-warning btnEditUser" data-full_name="<?= $uvalue->full_name ?>" data-username="<?= $uvalue->username ?>" data-email="<?= $uvalue->email ?>" data-foto="<?= $uvalue->foto ?>" data-idrole="<?= $uvalue->idrole ?>" data-bs-toggle="modal" data-bs-target="#editUser">
-                                            <i class="fa fa-edit"></i> Edit
-                                        </button>
-                                        <a href="<?php echo base_url('user/deleteUser?iduser=' . $uvalue->iduser); ?>">
-                                            <button type="button" class="btn btn-danger">
-                                                <i class="fa-solid fa-trash-can"></i> Hapus
-                                            </button>
-                                        </a>
-                                        <?php } ?>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td><?php echo $ukey + 1; ?></td>
+                                        <td><?php echo $uvalue->full_name; ?></td>
+                                        <td><?php echo $uvalue->username; ?></td>
+                                        <td><?php echo $uvalue->email; ?></td>
+                                        <td><img src="<?php echo base_url('assets/image/user/' . $uvalue->foto); ?>" alt="<?php echo $uvalue->foto; ?>" width="100px" height="100px" style="border-radius: 50%; object-fit: cover;"></td>
+                                        <td><?php echo $uvalue->nama_role; ?></td>
+                                        <td>
+                                            <?php if ($uvalue->is_verify == 1) { ?>
+                                                <?php if ($uvalue->iduser != 4) { ?>
+                                                    <button type="button" class="btn btn-warning btnEditUser" data-full_name="<?= $uvalue->full_name ?>" data-username="<?= $uvalue->username ?>" data-email="<?= $uvalue->email ?>" data-foto="<?= $uvalue->foto ?>" data-idrole="<?= $uvalue->idrole ?>" data-bs-toggle="modal" data-bs-target="#editUser">
+                                                        <i class="fa fa-edit"></i> Edit
+                                                    </button>
+                                                    <a href="<?php echo base_url('user/deleteUser?iduser=' . $uvalue->iduser); ?>">
+                                                        <button type="button" class="btn btn-danger">
+                                                            <i class="fa-solid fa-trash-can"></i> Hapus
+                                                        </button>
+                                                    </a>
+                                                <?php } ?>
+                                            <?php } else { ?>
+                                                <button type="button" class="btn btn-success btnOpenVerifyModal" data-iduser="<?= $uvalue->iduser ?>" data-nama="<?= $uvalue->full_name ?>" data-bs-toggle="modal" data-bs-target="#verifyModal">
+                                                    Verify
+                                                </button>
+                                            <?php } ?>
+                                        </td>
+                                    </tr>
                                 <?php } ?>
                             </tbody>
                         </table>
@@ -239,6 +265,22 @@
                                     option.selected = false;
                                 }
                             });
+                        });
+                    });
+                });
+
+                document.addEventListener('DOMContentLoaded', function() {
+                    const verifyButtons = document.querySelectorAll('.btnOpenVerifyModal');
+                    const namaUserSpan = document.getElementById('namaUserVerify');
+                    const confirmVerifyBtn = document.getElementById('btnConfirmVerify');
+
+                    verifyButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            const iduser = this.getAttribute('data-iduser');
+                            const nama = this.getAttribute('data-nama');
+
+                            namaUserSpan.textContent = nama;
+                            confirmVerifyBtn.href = "<?= base_url('user/verifyUser?iduser=') ?>" + iduser;
                         });
                     });
                 });

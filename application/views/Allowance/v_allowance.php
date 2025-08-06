@@ -2,7 +2,7 @@
 $start = $start ?? null;
 $end = $end ?? null;
 $dates = [];
-$show_periode = $this->input->get('show_periode'); // Ambil status checkbox
+$show_periode = $this->input->get('show_periode');
 
 if ($start && $end) {
     $period = new DatePeriod(
@@ -20,7 +20,7 @@ if ($start && $end) {
 <div class="container-fluid">
     <div class="row">
         <div class="col">
-            <h1 class="mt-4">Meal Allowance</h1>
+            <h1 class="mt-4">Allowance</h1>
         </div>
     </div>
 

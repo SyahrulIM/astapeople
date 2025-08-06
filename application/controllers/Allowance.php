@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Meal_allowance extends CI_Controller
+class Allowance extends CI_Controller
 {
     public function __construct()
     {
@@ -18,7 +18,7 @@ class Meal_allowance extends CI_Controller
         $end = $this->input->get('absensi_end');
 
         $data = [
-            'title' => 'Meal Allowance',
+            'title' => 'Allowance',
             'start' => $start,
             'end' => $end,
             'results' => []
@@ -59,6 +59,6 @@ class Meal_allowance extends CI_Controller
         }
 
         $this->load->view('theme/v_head', $data);
-        $this->load->view('Meal_allowance/v_meal_allowance', $data);
+        $this->load->view('Allowance/v_allowance', $data);
     }
 }
