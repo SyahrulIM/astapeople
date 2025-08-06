@@ -31,27 +31,26 @@ class Report extends CI_Controller
                 ->group_by('pd.idppl_employee, pd.`date`')
                 ->get_compiled_select();
 
-            $this->db
-                ->select('
+            $this->db->select('
                     pe.name,
                     pd.idppl_employee,
                     pd.`date`,
+                    MAX(t.is_verify) AS is_verify,
                     MAX(pd.check_in) AS check_in,
                     MAX(pd.check_out) AS check_out,
-                    MAX(pd.reason) AS reason,
-                    MAX(pd.is_permission) AS is_permission,
-                    to.reason AS time_off_reason
+                    MAX(t.reason) AS reason,
+                    MAX(pd.is_permission) AS is_permission
                 ')
                 ->from('ppl_presence_detail pd')
                 ->join('ppl_presence pp', 'pp.idppl_presence = pd.idppl_presence')
                 ->join('ppl_employee pe', 'pe.idppl_employee = pd.idppl_employee')
-                ->join('time_off to', 'to.iduser = pe.iduser AND to.date = pd.date', 'left')
-                ->join("($subquery) latest", 'latest.idppl_employee = pd.idppl_employee AND latest.`date` = pd.`date` AND latest.max_created = pp.created_date')
-                ->group_by('pe.name, pd.idppl_employee, pd.`date`, to.reason')
+                ->join('time_off t', 't.iduser = pe.iduser AND t.date = pd.date', 'left')
+                ->join("($subquery) latest", 'latest.idppl_employee = pd.idppl_employee AND latest.date = pd.date AND latest.max_created = pp.created_date')
+                ->group_by(['pe.name', 'pd.idppl_employee', 'pd.date'])
                 ->order_by('pe.name', 'ASC')
-                ->order_by('pd.`date`', 'ASC');
+                ->order_by('pd.date', 'ASC');
 
-
+            // Jika ada filter karyawan
             if (!empty($employee_id)) {
                 $this->db->where('pd.idppl_employee', $employee_id);
             }
@@ -119,7 +118,8 @@ class Report extends CI_Controller
                 'is_permission' => $row->is_permission,
                 'is_late' => (!empty($row->check_in) && $standard_in && $row->check_in > $standard_in),
                 'left_early' => (!empty($row->check_out) && $standard_out && $row->check_out < $standard_out),
-                'holiday_type' => $day_types[$date] ?? 'Workday'
+                'holiday_type' => $day_types[$date] ?? 'Workday',
+                'is_verify' => $row->is_verify
             ];
         }
 
@@ -192,6 +192,10 @@ class Report extends CI_Controller
         $this->db->select('ppl_employee.idppl_employee as idppl_employee, ppl_employee.name as name');
         $this->db->order_by('name', 'ASC');
         $employees = $this->db->get('ppl_employee')->result();
+
+        // echo '<pre>';
+        // print_r($processed_data);
+        // die;
 
         // Prepare data for view
         $data = [

@@ -58,6 +58,15 @@ if ($start && $end) {
     <!-- Table Result -->
     <div class="row mt-4">
         <div class="col">
+            <a href="<?php echo base_url('allowance/exportExcel?absensi_start=' . $start . '&absensi_end=' . $end); ?>">
+                <button type="button" class="btn btn-success">
+                    <i class="fa-solid fa-file-excel"></i> Export Excel
+                </button>
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
             <table id="tableMeal" class="table table-striped table-bordered nowrap" style="width:100%">
                 <thead class="table-dark">
                     <tr>

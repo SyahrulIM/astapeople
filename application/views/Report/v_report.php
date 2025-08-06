@@ -160,12 +160,19 @@
                             <td><?= $checkOut ?: '-' ?></td>
                             <td><?= $lateMinutes > 0 ? round($lateMinutes) : '-' ?></td>
                             <td><?= $earlyLeaveMinutes > 0 ? round($earlyLeaveMinutes) : '-' ?></td>
-                            <?php if (empty($reason)) { ?>
+                            <?php
+                            $isVerify = isset($row->is_verify) ? $row->is_verify : 0;
+                            if (empty($reason)) { ?>
                                 <td>-</td>
-                            <?php } elseif ($reason === 'Dinas') { ?>
+                            <?php } elseif ($reason === 'Dinas' && $isVerify === '1') { ?>
                                 <td><span class="badge text-bg-success">Dinas</span></td>
-                            <?php } else { ?>
+                            <?php } elseif (($reason === 'Sick' && $isVerify === '1') ||
+                                ($reason === 'Personal' && $isVerify === '1') ||
+                                ($reason === 'Cuti' && $isVerify === '1')
+                            ) { ?>
                                 <td><span class="badge text-bg-danger"><?= $reason; ?></span></td>
+                            <?php } else { ?>
+                                <td>Menunggu Verifikasi</td>
                             <?php } ?>
                             <td>
                                 <?php if ($isWeekend) : ?>
