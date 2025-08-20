@@ -2,7 +2,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col">
-            <h1 class="mt-4">Attendance Report</h1>
+            <h1 class="mt-4">Laporan</h1>
         </div>
     </div>
 

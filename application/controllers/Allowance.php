@@ -132,7 +132,7 @@ class Allowance extends CI_Controller
         }
 
         // Create Excel
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
         // Header
@@ -166,11 +166,12 @@ class Allowance extends CI_Controller
 
         // Output
         $filename = 'meal_allowance_' . date('Ymd_His') . '.xlsx';
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header("Content-Disposition: attachment;filename=\"$filename\"");
         header('Cache-Control: max-age=0');
 
-        $writer = new Xlsx($spreadsheet);
         $writer->save('php://output');
         exit;
     }

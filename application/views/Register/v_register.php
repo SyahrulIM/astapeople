@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Asta People - Register</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
 <body>
@@ -24,11 +26,11 @@
                         </div>
                         <div class="row">
                             <div class="col">
-                                <form action="<?php echo base_url('register/addUser')?>" method="POST">
+                                <form action="<?php echo base_url('register/addUser') ?>" method="POST">
                                     <div class="row">
                                         <div class="col">
                                             <div class="mb-3">
-                                                <label for="inputUsername" class="form-label">Username</label>
+                                                <label for="inputUsername" class="form-label">Username(Nama Panggilan)</label>
                                                 <input type="text" class="form-control" id="inputUsername" name="inputUsername">
                                             </div>
                                             <div class="mb-3">
@@ -38,7 +40,7 @@
                                         </div>
                                         <div class="col">
                                             <div class="mb-3">
-                                                <label for="inputFullname" class="form-label">Full Name</label>
+                                                <label for="inputFullname" class="form-label">Nama Lengkap</label>
                                                 <input type="text" class="form-control" id="inputFullname" name="inputFullname">
                                             </div>
                                             <div class="mb-3">
@@ -51,7 +53,12 @@
                                         <div class="col">
                                             <div class="mb-3">
                                                 <label for="inputPassword" class="form-label">Password</label>
-                                                <input type="password" class="form-control" id="inputPassword" name="inputPassword">
+                                                <div class="input-group">
+                                                    <input type="password" class="form-control" id="inputPassword" name="inputPassword">
+                                                    <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                                                        <i class="fa fa-eye" aria-hidden="true"></i>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -66,6 +73,25 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+    <script>
+        const togglePassword = document.querySelector('#togglePassword');
+        const passwordField = document.querySelector('#inputPassword');
+        const icon = togglePassword.querySelector('i');
+
+        togglePassword.addEventListener('click', function() {
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+
+            // ganti icon Font Awesome
+            if (type === 'password') {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            } else {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
+        });
+    </script>
 </body>
 
 </html>

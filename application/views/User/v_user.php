@@ -50,7 +50,12 @@
                                     </div>
                                     <div class="mb-3">
                                         <label for="inputPassword" class="form-label">Password</label>
-                                        <input type="password" class="form-control" id="inputPassword" name="inputPassword" required>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="inputPassword" name="inputPassword" required>
+                                            <button type="button" class="btn btn-outline-secondary toggle-password" data-target="#inputPassword">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="mb-3">
                                         <label for="inputFoto">Foto</label>
@@ -99,7 +104,12 @@
                                     </div>
                                     <div class="mb-3">
                                         <label for="editPassword" class="form-label">Password (kosongkan jika tidak ingin diubah)</label>
-                                        <input type="password" class="form-control" id="editPassword" name="editPassword">
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="editPassword" name="editPassword">
+                                            <button type="button" class="btn btn-outline-secondary toggle-password" data-target="#editPassword">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="mb-3">
                                         <label for="editFoto">Foto</label>
@@ -282,6 +292,25 @@
                             namaUserSpan.textContent = nama;
                             confirmVerifyBtn.href = "<?= base_url('user/verifyUser?iduser=') ?>" + iduser;
                         });
+                    });
+                });
+
+                document.querySelectorAll('.toggle-password').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const target = document.querySelector(this.dataset.target);
+                        const icon = this.querySelector('i');
+
+                        const type = target.getAttribute('type') === 'password' ? 'text' : 'password';
+                        target.setAttribute('type', type);
+
+                        // ganti icon
+                        if (type === 'password') {
+                            icon.classList.remove('bi-eye-slash');
+                            icon.classList.add('bi-eye');
+                        } else {
+                            icon.classList.remove('bi-eye');
+                            icon.classList.add('bi-eye-slash');
+                        }
                     });
                 });
             </script>

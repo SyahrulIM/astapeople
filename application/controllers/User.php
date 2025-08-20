@@ -171,10 +171,38 @@ class User extends CI_Controller
     {
         $iduser = $this->input->get('iduser');
 
-        // Validasi jika iduser tidak kosong
         if ($iduser) {
-            $this->db->where('iduser', $iduser);
-            $this->db->update('user', ['is_verify' => 1]);
+            $user = $this->db->get_where('user', ['iduser' => $iduser])->row();
+
+            if ($user) {
+                $this->db->where('iduser', $iduser);
+                $this->db->update('user', ['is_verify' => 1]);
+
+                $target = $user->handphone;
+
+                if (!empty($target)) {
+                    $token = 'EyuhsmTqzeKaDknoxdxt';
+                    $message = 'Selamat, ' . $user->full_name . '! 🎉 Kamu sudah diverifikasi dan sekarang bisa akses Asta People.';
+
+                    $curl = curl_init();
+                    curl_setopt_array($curl, array(
+                        CURLOPT_URL => 'https://api.fonnte.com/send',
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_POST => true,
+                        CURLOPT_POSTFIELDS => array(
+                            'target' => $target,
+                            'message' => $message,
+                            'countryCode' => '62',
+                        ),
+                        CURLOPT_HTTPHEADER => array(
+                            'Authorization: ' . $token
+                        ),
+                    ));
+
+                    curl_exec($curl);
+                    curl_close($curl);
+                }
+            }
         }
 
         redirect('user');

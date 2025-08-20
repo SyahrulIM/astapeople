@@ -2,13 +2,13 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col">
-                        <h1 class="mt-4">Request Time Off</h1>
+                        <h1 class="mt-4"> Pengajuan Ijin</h1>
                     </div>
                 </div>
 
                 <!-- Button trigger modal Tambah Pengguna -->
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRequest">
-                    <i class="fa-solid fa-plus"></i> Tambah Request Time Off
+                    <i class="fa-solid fa-plus"></i> Tambah Pengajuan Ijin
                 </button>
                 <!-- End -->
 
@@ -34,22 +34,22 @@
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="addRequestLabel">Tambah Request Time Off</h1>
+                                    <h1 class="modal-title fs-5" id="addRequestLabel">Tambah Pengajuan Ijin</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div class="mb-3">
-                                        <label for="reason" class="form-label">Reason</label>
+                                        <label for="reason" class="form-label">Alasan</label>
                                         <select class="form-select" id="reason" name="reason" required>
-                                            <option value="">-- Select Reason --</option>
-                                            <option value="Sick">Sick</option>
+                                            <option value="">-- Pilih Alasan --</option>
+                                            <option value="Sick">Sakit</option>
                                             <option value="Personal">Personal</option>
                                             <option value="Cuti">Cuti</option>
                                             <option value="Dinas">Dinas</option>
                                         </select>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="dateRequest" class="form-label">Date Request</label>
+                                        <label for="dateRequest" class="form-label">Tanggal diajukan</label>
                                         <input type="date" class="form-control" id="dateRequest" name="dateRequest" required>
                                     </div>
                                 </div>
@@ -152,7 +152,7 @@
                                         <td><?= $dtovalue->reason; ?></td>
                                         <td>
                                             <?php if ($dtovalue->is_verify == 1) { ?>
-                                                <span class="badge text-bg-success">Tersetujui</span>
+                                                <span class="badge text-bg-success">Disetujui</span>
                                             <?php } elseif ($dtovalue->is_verify == 2) { ?>
                                                 <span class="badge text-bg-danger">Ditolak</span>
                                             <?php } else { ?>

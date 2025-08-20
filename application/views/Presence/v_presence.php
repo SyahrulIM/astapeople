@@ -2,7 +2,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col">
-                        <h1 class="mt-4">Database Absensi</h1>
+                        <h1 class="mt-4">Absensi</h1>
                     </div>
                 </div>
                 <!-- Start Import Absensi .xlsx -->

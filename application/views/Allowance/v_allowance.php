@@ -20,7 +20,7 @@ if ($start && $end) {
 <div class="container-fluid">
     <div class="row">
         <div class="col">
-            <h1 class="mt-4">Allowance</h1>
+            <h1 class="mt-4">Tunjangan</h1>
         </div>
     </div>
 
