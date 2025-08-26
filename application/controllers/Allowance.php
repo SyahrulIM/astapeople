@@ -20,6 +20,8 @@ class Allowance extends CI_Controller
     {
         $start = $this->input->get('absensi_start');
         $end = $this->input->get('absensi_end');
+        $idrole = $this->session->userdata('idrole');
+        $iduser = $this->session->userdata('iduser');
 
         $data = [
             'title' => 'Allowance',
@@ -29,18 +31,29 @@ class Allowance extends CI_Controller
         ];
 
         if ($start && $end) {
-            $query = $this->db->query("
-            SELECT 
-                e.idppl_employee, e.name, d.date, d.check_in, d.check_out, d.reason,
-                t.reason AS timeoff_reason, t.is_verify
-            FROM ppl_employee e
-            LEFT JOIN ppl_presence_detail d ON e.idppl_employee = d.idppl_employee
-            LEFT JOIN time_off t ON e.iduser = t.iduser AND d.date = t.date
-            WHERE d.date BETWEEN ? AND ?
-            ORDER BY e.name, d.date
-        ", [$start, $end]);
+            $sql = "
+        SELECT 
+            e.idppl_employee, e.name, d.date, d.check_in, d.check_out, d.reason,
+            d.is_edit,                                      -- tambahin ini
+            t.reason AS timeoff_reason, t.is_verify
+        FROM ppl_employee e
+        LEFT JOIN ppl_presence_detail d ON e.idppl_employee = d.idppl_employee
+        LEFT JOIN time_off t ON e.iduser = t.iduser AND d.date = t.date
+        WHERE d.date BETWEEN ? AND ?
+        ";
 
+            $params = [$start, $end];
+
+            if ($idrole != 1) {
+                $sql .= " AND e.iduser = ? ";
+                $params[] = $iduser;
+            }
+
+            $sql .= " ORDER BY e.name, d.date";
+
+            $query = $this->db->query($sql, $params);
             $rows = $query->result();
+
             $grouped = [];
 
             foreach ($rows as $row) {
@@ -58,12 +71,45 @@ class Allowance extends CI_Controller
                 $got_meal = false;
 
                 if ($row->check_in && $row->check_out) {
-                    $got_meal = true;
+                    $check_in_time = strtotime($row->check_in);
+                    $check_out_time = strtotime($row->check_out);
+
+                    $late_limit = strtotime('08:15:00');
+                    $early_limit = strtotime('17:00:00');
+
+                    if ($check_in_time <= $late_limit && $check_out_time >= $early_limit) {
+                        $got_meal = true;
+                    }
                 } elseif (strtolower($row->timeoff_reason) === 'dinas' && $row->is_verify == 1) {
                     $got_meal = true;
                 }
 
-                $grouped[$id]['presence'][$date] = $got_meal ? '✓' : '-';
+                $grouped[$id]['presence'][$date] = '-';
+
+                if ($row->check_in && $row->check_out) {
+                    $check_in_time = strtotime($row->check_in);
+                    $check_out_time = strtotime($row->check_out);
+
+                    $late_limit  = strtotime('08:15:00');
+                    $early_limit = strtotime('17:00:00');
+
+                    if ($check_in_time <= $late_limit && $check_out_time >= $early_limit) {
+                        // default warna hijau
+                        $check_symbol = '<span class="text-success fw-bold">✓</span>';
+
+                        // kalau data hasil edit
+                        if (!empty($row->is_edit) && $row->is_edit == 1) {
+                            $check_symbol = '<span class="text-danger fw-bold">✓</span>';
+                        }
+
+                        $grouped[$id]['presence'][$date] = $check_symbol;
+                        $grouped[$id]['total_attend']++;
+                    }
+                } elseif (strtolower($row->timeoff_reason) === 'dinas' && $row->is_verify == 1) {
+                    $grouped[$id]['presence'][$date] = '<span class="text-success fw-bold">✓</span>';
+                    $grouped[$id]['total_attend']++;
+                }
+
                 if ($got_meal) $grouped[$id]['total_attend']++;
             }
 
@@ -80,6 +126,7 @@ class Allowance extends CI_Controller
         $end = $this->input->get('absensi_end');
 
         if (!$start || !$end) {
+            $this->session->set_flashdata('error', 'Please select start and end dates.');
             redirect('allowance');
         }
 
@@ -96,6 +143,8 @@ class Allowance extends CI_Controller
 
         $rows = $query->result();
         $grouped = [];
+
+        // Create date range
         $period = new DatePeriod(
             new DateTime($start),
             new DateInterval('P1D'),
@@ -131,22 +180,45 @@ class Allowance extends CI_Controller
             if ($got_meal) $grouped[$id]['total_attend']++;
         }
 
-        // Create Excel
+        // Create Spreadsheet
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Header
+        // Set document properties
+        $spreadsheet->getProperties()
+            ->setCreator("Your System")
+            ->setTitle("Meal Allowance Report")
+            ->setSubject("Meal Allowance from {$start} to {$end}");
+
+        // Set header styles
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
+        ];
+
+        // Set data styles
+        $dataStyle = [
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
+        ];
+
+        // Header row
         $col = 'A';
         $sheet->setCellValue($col++ . '1', 'No');
         $sheet->setCellValue($col++ . '1', 'Full Name');
+
         foreach ($dates as $d) {
             $sheet->setCellValue($col++ . '1', date('d M', strtotime($d)));
         }
+
         $sheet->setCellValue($col++ . '1', 'Total Attendance');
         $sheet->setCellValue($col++ . '1', 'Meal Allowance (Rp)');
-        $sheet->setCellValue($col++ . '1', 'Total Allowance (Rp)');
+        $sheet->setCellValue($col . '1', 'Total Allowance (Rp)');
 
-        // Body
+        // Apply header styles
+        $sheet->getStyle('A1:' . $col . '1')->applyFromArray($headerStyle);
+
+        // Body data
         $rowNum = 2;
         $no = 1;
         foreach ($grouped as $emp) {
@@ -155,14 +227,39 @@ class Allowance extends CI_Controller
             $sheet->setCellValue($col++ . $rowNum, $emp['name']);
 
             foreach ($dates as $d) {
-                $sheet->setCellValue($col++ . $rowNum, $emp['presence'][$d] ?? '-');
+                $value = $emp['presence'][$d] ?? '-';
+                $sheet->setCellValue($col++ . $rowNum, $value);
+
+                // Optional: Add color for checkmarks
+                if ($value === '✓') {
+                    $sheet->getStyle($col - 1 . $rowNum)->getFont()->getColor()->setRGB('006100');
+                } elseif ($value === '-') {
+                    $sheet->getStyle($col - 1 . $rowNum)->getFont()->getColor()->setRGB('FF0000');
+                }
             }
 
             $sheet->setCellValue($col++ . $rowNum, $emp['total_attend']);
             $sheet->setCellValue($col++ . $rowNum, 20000);
-            $sheet->setCellValue($col++ . $rowNum, $emp['total_attend'] * 20000);
+            $sheet->setCellValue($col . $rowNum, $emp['total_attend'] * 20000);
+
+            // Format currency
+            $sheet->getStyle($col - 1 . $rowNum)->getNumberFormat()->setFormatCode('#,##0');
+            $sheet->getStyle($col . $rowNum)->getNumberFormat()->setFormatCode('#,##0');
+
             $rowNum++;
         }
+
+        // Apply data borders
+        $lastCol = $col;
+        $sheet->getStyle('A1:' . $lastCol . ($rowNum - 1))->applyFromArray($dataStyle);
+
+        // Auto size columns
+        foreach (range('A', $lastCol) as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
+
+        // Freeze first row and first two columns
+        $sheet->freezePane('C2');
 
         // Output
         $filename = 'meal_allowance_' . date('Ymd_His') . '.xlsx';
@@ -171,6 +268,7 @@ class Allowance extends CI_Controller
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header("Content-Disposition: attachment;filename=\"$filename\"");
         header('Cache-Control: max-age=0');
+        header('Pragma: no-cache');
 
         $writer->save('php://output');
         exit;

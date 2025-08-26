@@ -16,7 +16,19 @@ class Report extends CI_Controller
     {
         $start_date = $this->input->get('absensi_start');
         $end_date = $this->input->get('absensi_end');
-        $employee_id = $this->input->get('employee');
+        $iduser = $this->session->userdata('iduser');
+
+        // ambil employee_id dari tabel
+        $this->db->select('idppl_employee');
+        $this->db->where('iduser', $iduser);
+        $employee_row = $this->db->get('ppl_employee')->row();
+
+        $employee_id = $employee_row ? $employee_row->idppl_employee : null;
+
+        // kalau admin, ambil dari GET kalau ada
+        if ($this->session->userdata('idrole') == 1) {
+            $employee_id = $this->input->get('employee') ?: $employee_id;
+        }
 
         $presence_data = [];
 
@@ -39,7 +51,8 @@ class Report extends CI_Controller
                     MAX(pd.check_in) AS check_in,
                     MAX(pd.check_out) AS check_out,
                     MAX(t.reason) AS reason,
-                    MAX(pd.is_permission) AS is_permission
+                    MAX(pd.is_permission) AS is_permission,
+                    MAX(pd.is_edit) AS is_edit
                 ')
                 ->from('ppl_presence_detail pd')
                 ->join('ppl_presence pp', 'pp.idppl_presence = pd.idppl_presence')
@@ -119,7 +132,8 @@ class Report extends CI_Controller
                 'is_late' => (!empty($row->check_in) && $standard_in && $row->check_in > $standard_in),
                 'left_early' => (!empty($row->check_out) && $standard_out && $row->check_out < $standard_out),
                 'holiday_type' => $day_types[$date] ?? 'Workday',
-                'is_verify' => $row->is_verify
+                'is_verify' => $row->is_verify,
+                'is_edit' => $row->is_edit
             ];
         }
 
@@ -193,10 +207,6 @@ class Report extends CI_Controller
         $this->db->order_by('name', 'ASC');
         $employees = $this->db->get('ppl_employee')->result();
 
-        // echo '<pre>';
-        // print_r($processed_data);
-        // die;
-
         // Prepare data for view
         $data = [
             'title' => 'Attendance Report',
@@ -212,22 +222,61 @@ class Report extends CI_Controller
         $this->load->view('Report/v_report');
     }
 
-    public function permit()
+    public function get_attendance_detail()
     {
-        // Check if this is an AJAX request
+        $employee_id = $this->input->post('employee_id');
+        $date = $this->input->post('date');
+
+        if (!$employee_id || !$date) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Invalid request'
+            ]);
+            return;
+        }
+
+        $attendance = $this->db->select('
+            pd.*,
+            pe.name as employee_name,
+            t.reason,
+            t.is_verify
+        ')
+            ->from('ppl_presence_detail pd')
+            ->join('ppl_employee pe', 'pe.idppl_employee = pd.idppl_employee', 'left')
+            ->join('time_off t', 't.iduser = pe.iduser AND t.date = pd.date', 'left')
+            ->where('pd.idppl_employee', $employee_id)
+            ->where('pd.date', $date)
+            ->order_by('pd.idppl_presence_detail', 'DESC') // ambil yang terbaru kalau ada banyak
+            ->limit(1)
+            ->get()
+            ->row_array();
+
+        if ($attendance) {
+            echo json_encode([
+                'status' => 'success',
+                'data' => $attendance
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Data not found'
+            ]);
+        }
+    }
+
+    public function edit()
+    {
         if (!$this->input->is_ajax_request()) {
             show_404();
         }
 
-        // Load form validation library
         $this->load->library('form_validation');
 
-        // Set validation rules
         $this->form_validation->set_rules('employee_id', 'Employee ID', 'required|numeric');
         $this->form_validation->set_rules('date', 'Date', 'required');
-        $this->form_validation->set_rules('reason', 'Reason', 'required');
+        $this->form_validation->set_rules('time_start', 'Start Time', 'required');
+        $this->form_validation->set_rules('time_end', 'End Time', 'required');
 
-        // Run validation
         if ($this->form_validation->run() === FALSE) {
             echo json_encode([
                 'status' => 'error',
@@ -236,66 +285,42 @@ class Report extends CI_Controller
             return;
         }
 
-        // Get POST data
         $employee_id = $this->input->post('employee_id');
-        $date = $this->input->post('date');
-        $reason = $this->input->post('reason');
+        $date        = $this->input->post('date');
+        $time_start  = $this->input->post('time_start');
+        $time_end    = $this->input->post('time_end');
 
-        // Prepare update data
         $update_data = [
-            'is_permission' => 1,
-            'reason' => $reason,
-            'status' => 1 // Assuming 1 means approved, adjust as needed
+            'check_in'      => $time_start,
+            'check_out'     => $time_end,
+            'is_edit' => 1 // karena ini edit manual, bukan izin
         ];
 
-        // First find the presence_detail record
         $this->db->where('idppl_employee', $employee_id);
         $this->db->where('date', $date);
-        $query = $this->db->get('ppl_presence_detail');
+        $exists = $this->db->get('ppl_presence_detail')->row();
 
-        if ($query->num_rows() > 0) {
-            // Record exists, update it
+        if ($exists) {
             $this->db->where('idppl_employee', $employee_id);
             $this->db->where('date', $date);
             $result = $this->db->update('ppl_presence_detail', $update_data);
-
-            if ($result) {
-                echo json_encode([
-                    'status' => 'success',
-                    'message' => 'Permit submitted successfully'
-                ]);
-            } else {
-                echo json_encode([
-                    'status' => 'error',
-                    'message' => 'Failed to update permit'
-                ]);
-            }
         } else {
-            // Record doesn't exist, create new one
-            $insert_data = [
-                'idppl_employee' => $employee_id,
-                'date' => $date,
-                'check_in' => null,
-                'check_out' => null,
-                'reason' => $reason,
-                'is_permission' => 1,
-                'status' => 1,
-                // You might need to set idppl_presence here if required
-            ];
-
+            $insert_data = $update_data;
+            $insert_data['idppl_employee'] = $employee_id;
+            $insert_data['date'] = $date;
             $result = $this->db->insert('ppl_presence_detail', $insert_data);
+        }
 
-            if ($result) {
-                echo json_encode([
-                    'status' => 'success',
-                    'message' => 'Permit created successfully'
-                ]);
-            } else {
-                echo json_encode([
-                    'status' => 'error',
-                    'message' => 'Failed to create permit'
-                ]);
-            }
+        if ($result) {
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Absensi berhasil diperbarui'
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Gagal memperbarui absensi'
+            ]);
         }
     }
 }

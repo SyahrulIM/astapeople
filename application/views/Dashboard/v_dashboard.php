@@ -1,21 +1,9 @@
             <!-- Page content-->
             <div class="container-fluid">
                 <div class="row mt-4">
-                    <div class="col">
-                        <div class="card" style="width: 18rem;">
-                            <div class="card-body">
-                                <h5 class="card-title">Total Faktur Shopee</h5>
-                                <h1 class="card-text"><?php echo count($acc_shopee_detail) ?></h1>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="card" style="width: 18rem;">
-                            <div class="card-body">
-                                <h5 class="card-title">Total Faktur Accurate</h5>
-                                <h1 class="card-text"><?php echo count($acc_accurate_detail) ?></h1>
-                            </div>
-                        </div>
+                    <div class="col text-center">
+                        <h1>Welcome Asta People</h1>
+                        <h3>Better life Better home</h3>
                     </div>
                 </div>
             </div>

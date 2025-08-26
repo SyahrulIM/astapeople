@@ -20,17 +20,21 @@
                     <label for="absensi_end" class="form-label">Attendance Date (End)</label>
                     <input type="date" id="absensi_end" name="absensi_end" class="form-control" value="<?= $this->input->get('absensi_end') ?>" required>
                 </div>
-                <div class="col-md-3">
-                    <label for="employee" class="form-label">Employee</label>
-                    <select name="employee" id="employee" class="form-select">
-                        <option value="">-- Select Employee --</option>
-                        <?php foreach ($employee as $emp) : ?>
-                            <option value="<?= $emp->idppl_employee ?>" <?= ($this->input->get('employee') == $emp->idppl_employee) ? 'selected' : '' ?>>
-                                <?= $emp->name ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+                <?php if ($this->session->userdata('idrole') == 1) : ?>
+                    <div class="col-md-3">
+                        <label for="employee" class="form-label">Employee</label>
+                        <select name="employee" id="employee" class="form-select">
+                            <option value="">-- Select Employee --</option>
+                            <?php if (!empty($employee)) : ?>
+                                <?php foreach ($employee as $emp) : ?>
+                                    <option value="<?= $emp->idppl_employee ?>" <?= ($this->input->get('employee') == $emp->idppl_employee) ? 'selected' : '' ?>>
+                                        <?= $emp->name ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
                 <div class="col-md-3 d-flex align-items-end">
                     <div>
                         <button type="submit" class="btn btn-primary me-2">Filter</button>
@@ -65,28 +69,54 @@
         </div>
     </div>
 
-    <!-- Start Permit Modal -->
-    <div class="modal fade" id="permitModal" tabindex="-1" aria-labelledby="permitModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+    <!-- Start Edit Modal -->
+    <div class="modal fade" id="modalEdit" tabindex="-1" aria-labelledby="modalEditLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="permitModalLabel">Submit Permit</h5>
+                    <h5 class="modal-title" id="modalEditLabel">Edit Absen</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="permitForm" method="post" action="<?= base_url('report/permit') ?>">
+                <form id="permitForm" method="post" action="<?= base_url('report/edit') ?>">
                     <div class="modal-body">
                         <input type="hidden" name="employee_id" id="modalEmployeeId">
                         <input type="hidden" name="date" id="modalDate">
 
+                        <!-- Info Absen -->
                         <div class="mb-3">
-                            <label for="reason" class="form-label">Reason</label>
-                            <select class="form-select" id="reason" name="reason" required>
-                                <option value="">-- Select Reason --</option>
-                                <option value="Sick">Sick</option>
-                                <option value="Personal">Personal</option>
-                                <option value="Cuti">Cuti</option>
-                                <option value="Dinas">Dinas</option>
-                            </select>
+                            <h6 class="fw-bold">Attendance Detail</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>Employee</th>
+                                    <td id="detailEmployee"></td>
+                                </tr>
+                                <tr>
+                                    <th>Date</th>
+                                    <td id="detailDate"></td>
+                                </tr>
+                                <tr>
+                                    <th>Check In</th>
+                                    <td id="detailCheckIn"></td>
+                                </tr>
+                                <tr>
+                                    <th>Check Out</th>
+                                    <td id="detailCheckOut"></td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td id="detailStatus"></td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Input Edit -->
+                        <div class="mb-3">
+                            <label for="time_start" class="form-label">Start Time</label>
+                            <input type="time" class="form-control" name="time_start" id="time_start" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="time_end" class="form-label">End Time</label>
+                            <input type="time" class="form-control" name="time_end" id="time_end" required>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -114,7 +144,8 @@
                         <th>Early Leave(Min)</th>
                         <th>Reason</th>
                         <th>Status</th>
-                        <!-- <td>Action</td> -->
+                        <th>Status Edit</th>
+                        <td>Action</td>
                     </tr>
                 </thead>
 
@@ -132,6 +163,7 @@
                         $isWeekend = ($weekday == 0);
                         $isSaturday = ($weekday == 6);
                         $isNationalHoliday = $row->holiday_type === 'National Holiday';
+                        $isEdit = $row->is_edit;
 
                         // Time thresholds
                         $workStart = ($isSaturday ? '08:10:00' : '08:10:00');
@@ -193,22 +225,19 @@
                                     <span class="badge bg-success">Present</span>
                                 <?php endif; ?>
                             </td>
-                            <!-- <td>
-                                <?php if (
-                                    ($isWeekend === false && $isNationalHoliday === false) &&
-                                    (
-                                        (empty($checkIn) && empty($checkOut)) || // Absent
-                                        (empty($checkIn) || empty($checkOut)) || // Incomplete
-                                        $isLate || $isEarlyLeave // Late, Early Leave, Late & Early Leave
-                                    )
-                                ) : ?>
-                                    <button type="button" class="btn btn-success btn-permit" data-employee-id="<?= $row->idppl_employee ?>" data-date="<?= $date ?>" data-reason="<?= $reason ?>">
-                                        Permit
-                                    </button>
-                                <?php else : ?>
-                                    -
-                                <?php endif; ?>
-                            </td> -->
+                            <td>
+                                <?php if ($isEdit == 1){?>
+                                    <span class="badge bg-warning">Diedit</span>
+                                <?php } else { ?>
+                                    <span class="badge bg-success">Tidak Diedit</span>
+                                <?php } ?>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-warning btn-edit" data-employee-id="<?= $row->idppl_employee ?>" data-date="<?= $date ?>" data-reason="<?= $reason ?>">
+                                    Edit Absensi
+                                </button>
+                            </td>
+                            </td>
                         </tr>
                     <?php } ?>
                 </tbody>
@@ -252,47 +281,80 @@
             $('#modalDate').val(date);
             $('#permitModal .modal-title').text('Submit Permit for ' + employeeName + ' - ' + date);
 
-            // Set existing reason if available and not empty/dash
             if (existingReason && existingReason !== '-') {
                 $('#reason').val(existingReason);
             } else {
-                $('#reason').val(''); // Reset to default if no reason exists
+                $('#reason').val('');
             }
 
             // Show modal
             var modal = new bootstrap.Modal(document.getElementById('permitModal'));
             modal.show();
         });
+    });
 
-        // Handle form submission
-        $('#permitForm').on('submit', function(e) {
-            e.preventDefault();
-
-            // Show loading state
-            var submitBtn = $(this).find('button[type="submit"]');
-            submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+    $(document).ready(function() {
+        $(".btn-edit").on("click", function() {
+            let employeeId = $(this).data("employee-id");
+            let date = $(this).data("date");
 
             $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: $(this).serialize(),
-                dataType: 'json',
-                success: function(response) {
-                    if (response.status === 'success') {
-                        alert(response.message);
-                        $('#permitModal').modal('hide');
-                        location.reload();
+                url: "<?= base_url('report/get_attendance_detail') ?>",
+                type: "POST",
+                dataType: "json",
+                data: {
+                    employee_id: employeeId,
+                    date: date
+                },
+                success: function(res) {
+                    if (res.status === "success") {
+                        let data = res.data;
+
+                        // isi detail info
+                        $("#detailEmployee").text(data.employee_name);
+                        $("#detailDate").text(data.date);
+                        $("#detailCheckIn").text(data.check_in || "-");
+                        $("#detailCheckOut").text(data.check_out || "-");
+                        $("#detailStatus").text(data.status || "-");
+
+                        // isi input form
+                        $("#modalEmployeeId").val(employeeId);
+                        $("#modalDate").val(data.date);
+                        $("#time_start").val(data.check_in);
+                        $("#time_end").val(data.check_out);
+
+                        // buka modal
+                        $("#modalEdit").modal("show");
                     } else {
-                        alert('Error: ' + response.message);
+                        alert(res.message);
                     }
                 },
                 error: function() {
-                    alert('An error occurred while submitting the permit.');
-                },
-                complete: function() {
-                    submitBtn.prop('disabled', false).text('Submit');
+                    alert("Gagal ambil data. Coba lagi!");
                 }
             });
+        });
+    });
+    $(document).on("submit", "#permitForm", function(e) {
+        e.preventDefault();
+
+        $.ajax({
+            url: "<?= base_url('report/edit') ?>",
+            type: "POST",
+            data: $(this).serialize(),
+            dataType: "json",
+            success: function(res) {
+                if (res.status === "success") {
+                    alert(res.message);
+                    $("#modalEdit").modal("hide");
+                    location.reload();
+                } else {
+                    alert(res.message);
+                }
+            },
+            error: function() {
+                alert("Terjadi kesalahan saat update absensi!");
+            }
         });
     });
 </script>

@@ -59,7 +59,7 @@ if ($start && $end) {
     <div class="row mt-4">
         <div class="col">
             <a href="<?php echo base_url('allowance/exportExcel?absensi_start=' . $start . '&absensi_end=' . $end); ?>">
-                <button type="button" class="btn btn-success">
+                <button type="button" class="btn btn-success" hidden>
                     <i class="fa-solid fa-file-excel"></i> Export Excel
                 </button>
             </a>
