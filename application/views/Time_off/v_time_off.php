@@ -30,7 +30,7 @@
 
                 <!-- Modal Tambah Pengguna -->
                 <div class="modal fade" id="addRequest" tabindex="-1" aria-labelledby="addRequestLabel" aria-hidden="true">
-                    <form method="post" action="<?php echo base_url('time_off/addRequest') ?>" enctype="multipart/form-data">
+                    <form method="post" action="<?php echo base_url('time_off/addRequest') ?>" enctype="multipart/form-data" id="addRequestForm">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -59,6 +59,26 @@
                             </div>
                         </div>
                     </form>
+                </div>
+                <!-- End -->
+
+                <!-- Modal Logout Confirmation -->
+                <div class="modal fade" id="logoutConfirmationModal" tabindex="-1" aria-labelledby="logoutConfirmationLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="logoutConfirmationLabel">Konfirmasi Logout</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Pengajuan ijin berhasil dibuat. Apakah Anda ingin logout sekarang?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tidak</button>
+                                <a href="<?php echo base_url('auth/logout'); ?>" class="btn btn-primary">Ya, Logout</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <!-- End -->
 
@@ -207,7 +227,20 @@
                             }
                         }
                     });
+
+                    // Check if we need to show logout modal after successful submission
+                    <?php if ($this->session->flashdata('show_logout_modal')) : ?>
+                        // Clear the flashdata so it doesn't show again on refresh
+                        <?php $this->session->unset_userdata('show_logout_modal'); ?>
+
+                        // Show the logout confirmation modal
+                        setTimeout(function() {
+                            var logoutModal = new bootstrap.Modal(document.getElementById('logoutConfirmationModal'));
+                            logoutModal.show();
+                        }, 1000); // Show after 1 second delay
+                    <?php endif; ?>
                 });
+
                 document.addEventListener('DOMContentLoaded', function() {
                     const editButtons = document.querySelectorAll('.btn-edit');
 

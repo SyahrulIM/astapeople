@@ -1,7 +1,6 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-// Move these OUTSIDE the class
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -94,10 +93,8 @@ class Allowance extends CI_Controller
                     $early_limit = strtotime('17:00:00');
 
                     if ($check_in_time <= $late_limit && $check_out_time >= $early_limit) {
-                        // default warna hijau
                         $check_symbol = '<span class="text-success fw-bold">✓</span>';
 
-                        // kalau data hasil edit
                         if (!empty($row->is_edit) && $row->is_edit == 1) {
                             $check_symbol = '<span class="text-danger fw-bold">✓</span>';
                         }

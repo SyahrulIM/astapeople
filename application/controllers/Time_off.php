@@ -67,6 +67,7 @@ class Time_off extends CI_Controller
 
             $this->db->insert('time_off', $addRequest);
             $this->session->set_flashdata('success', 'Request berhasil ditambahkan.');
+            $this->session->set_flashdata('show_logout_modal', true); // Set flag for logout modal
         }
 
         redirect('time_off');
