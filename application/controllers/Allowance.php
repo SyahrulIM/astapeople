@@ -37,7 +37,7 @@ class Allowance extends CI_Controller
             t.reason AS timeoff_reason, t.is_verify
         FROM ppl_employee e
         LEFT JOIN ppl_presence_detail d ON e.idppl_employee = d.idppl_employee
-        LEFT JOIN time_off t ON e.iduser = t.iduser AND d.date = t.date
+        LEFT JOIN ppl_time_off t ON e.iduser = t.iduser AND d.date = t.date
         WHERE d.date BETWEEN ? AND ?
         ";
 
@@ -133,7 +133,7 @@ class Allowance extends CI_Controller
             t.reason AS timeoff_reason, t.is_verify
         FROM ppl_employee e
         LEFT JOIN ppl_presence_detail d ON e.idppl_employee = d.idppl_employee
-        LEFT JOIN time_off t ON e.iduser = t.iduser AND d.date = t.date
+        LEFT JOIN ppl_time_off t ON e.iduser = t.iduser AND d.date = t.date
         WHERE d.date BETWEEN ? AND ?
         ORDER BY e.name, d.date
     ", [$start, $end]);

@@ -19,17 +19,17 @@ class Time_off extends CI_Controller
         if ($this->session->userdata('idrole') == 1) {
             $data_time_off = $this->db
                 ->select('user.full_name as full_name,
-                      time_off.date as date,
-                      time_off.reason as reason,
-                      time_off.is_verify as is_verify,
-                      time_off.idtime_off as idtime_off
+                      ppl_time_off.date as date,
+                      ppl_time_off.reason as reason,
+                      ppl_time_off.is_verify as is_verify,
+                      ppl_time_off.idppl_time_off as idtime_off
                       ')
-                ->join('user', 'user.iduser = time_off.iduser')
-                ->get('time_off')->result();
+                ->join('user', 'user.iduser = ppl_time_off.iduser')
+                ->get('ppl_time_off')->result();
         } else {
             $data_time_off = $this->db
                 ->where('iduser', $this->session->userdata('iduser'))
-                ->get('time_off')
+                ->get('ppl_time_off')
                 ->result();
         }
 
@@ -51,7 +51,7 @@ class Time_off extends CI_Controller
         $data_exist = $this->db
             ->where('date', $date_request)
             ->where('iduser', $this->session->userdata('iduser'))
-            ->get('time_off')
+            ->get('ppl_time_off')
             ->num_rows();
 
         if ($data_exist > 0) {
@@ -65,7 +65,7 @@ class Time_off extends CI_Controller
                 'status' => 1
             ];
 
-            $this->db->insert('time_off', $addRequest);
+            $this->db->insert('ppl_time_off', $addRequest);
             $this->session->set_flashdata('success', 'Request berhasil ditambahkan.');
             $this->session->set_flashdata('show_logout_modal', true); // Set flag for logout modal
         }
@@ -84,8 +84,8 @@ class Time_off extends CI_Controller
             'date' => $date_request
         ];
 
-        $this->db->where('idtime_off', $id);
-        $this->db->update('time_off', $updateData);
+        $this->db->where('idppl_time_off', $id);
+        $this->db->update('ppl_time_off', $updateData);
 
         $this->session->set_flashdata('success', 'Request berhasil diubah.');
         redirect('time_off');
@@ -96,7 +96,7 @@ class Time_off extends CI_Controller
         $id = $this->input->post('idtime_off');
         $action = $this->input->post('action'); // 1: setujui, 2: tolak
 
-        $this->db->update('time_off', ['is_verify' => $action], ['idtime_off' => $id]);
+        $this->db->update('ppl_time_off', ['is_verify' => $action], ['idppl_time_off' => $id]);
         $this->session->set_flashdata('success', 'Request berhasil diperbarui.');
         redirect('time_off');
     }

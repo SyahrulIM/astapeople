@@ -57,7 +57,7 @@ class Report extends CI_Controller
                 ->from('ppl_presence_detail pd')
                 ->join('ppl_presence pp', 'pp.idppl_presence = pd.idppl_presence')
                 ->join('ppl_employee pe', 'pe.idppl_employee = pd.idppl_employee')
-                ->join('time_off t', 't.iduser = pe.iduser AND t.date = pd.date', 'left')
+                ->join('ppl_time_off t', 't.iduser = pe.iduser AND t.date = pd.date', 'left')
                 ->join("($subquery) latest", 'latest.idppl_employee = pd.idppl_employee AND latest.date = pd.date AND latest.max_created = pp.created_date')
                 ->group_by(['pe.name', 'pd.idppl_employee', 'pd.date'])
                 ->order_by('pe.name', 'ASC')
@@ -243,7 +243,7 @@ class Report extends CI_Controller
         ')
             ->from('ppl_presence_detail pd')
             ->join('ppl_employee pe', 'pe.idppl_employee = pd.idppl_employee', 'left')
-            ->join('time_off t', 't.iduser = pe.iduser AND t.date = pd.date', 'left')
+            ->join('ppl_time_off t', 't.iduser = pe.iduser AND t.date = pd.date', 'left')
             ->where('pd.idppl_employee', $employee_id)
             ->where('pd.date', $date)
             ->order_by('pd.idppl_presence_detail', 'DESC') // ambil yang terbaru kalau ada banyak
