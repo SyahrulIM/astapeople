@@ -14,17 +14,17 @@
 
                 <!-- Flash messages -->
                 <?php if ($this->session->flashdata('error')) : ?>
-                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                        <?= $this->session->flashdata('error') ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
+                <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                    <?= $this->session->flashdata('error') ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
                 <?php endif; ?>
 
                 <?php if ($this->session->flashdata('success')) : ?>
-                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                        <?= $this->session->flashdata('success') ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
+                <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                    <?= $this->session->flashdata('success') ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
                 <?php endif; ?>
                 <!-- End -->
 
@@ -50,7 +50,7 @@
                                     </div>
                                     <div class="mb-3">
                                         <label for="dateRequest" class="form-label">Tanggal diajukan</label>
-                                        <input type="date" class="form-control" id="dateRequest" name="dateRequest" required>
+                                        <input type="date" class="form-control" id="dateRequest" name="dateRequest" min="<?= date('Y-m-d') ?>" required>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -151,7 +151,7 @@
                                 <tr>
                                     <th>No</th>
                                     <?php if ($this->session->userdata('idrole') == 1) { ?>
-                                        <th>Nama</th>
+                                    <th>Nama</th>
                                     <?php } ?>
                                     <th>Tanggal</th>
                                     <th>Alasan</th>
@@ -163,36 +163,36 @@
                                 <?php
                                 $no = 1;
                                 foreach ($data_time_off as $dtokey => $dtovalue) { ?>
-                                    <tr>
-                                        <td><?= $no++; ?></td>
-                                        <?php if ($this->session->userdata('idrole') == 1) { ?>
-                                            <td><?= $dtovalue->full_name; ?></td>
+                                <tr>
+                                    <td><?= $no++; ?></td>
+                                    <?php if ($this->session->userdata('idrole') == 1) { ?>
+                                    <td><?= $dtovalue->full_name; ?></td>
+                                    <?php } ?>
+                                    <td><?= $dtovalue->date; ?></td>
+                                    <td><?= $dtovalue->reason; ?></td>
+                                    <td>
+                                        <?php if ($dtovalue->is_verify == 1) { ?>
+                                        <span class="badge text-bg-success">Disetujui</span>
+                                        <?php } elseif ($dtovalue->is_verify == 2) { ?>
+                                        <span class="badge text-bg-danger">Ditolak</span>
+                                        <?php } else { ?>
+                                        <span class="badge text-bg-warning">Pending</span>
                                         <?php } ?>
-                                        <td><?= $dtovalue->date; ?></td>
-                                        <td><?= $dtovalue->reason; ?></td>
-                                        <td>
-                                            <?php if ($dtovalue->is_verify == 1) { ?>
-                                                <span class="badge text-bg-success">Disetujui</span>
-                                            <?php } elseif ($dtovalue->is_verify == 2) { ?>
-                                                <span class="badge text-bg-danger">Ditolak</span>
-                                            <?php } else { ?>
-                                                <span class="badge text-bg-warning">Pending</span>
-                                            <?php } ?>
-                                        </td>
-                                        <td>
-                                            <!-- Tombol Edit Request -->
-                                            <button type="button" class="btn btn-warning btn-edit" data-id="<?= $dtovalue->idtime_off ?>" data-date="<?= $dtovalue->date ?>" data-reason="<?= $dtovalue->reason ?>" data-bs-toggle="modal" data-bs-target="#editRequest">
-                                                Edit Request
-                                            </button>
+                                    </td>
+                                    <td>
+                                        <!-- Tombol Edit Request -->
+                                        <button type="button" class="btn btn-warning btn-edit" data-id="<?= $dtovalue->idtime_off ?>" data-date="<?= $dtovalue->date ?>" data-reason="<?= $dtovalue->reason ?>" data-bs-toggle="modal" data-bs-target="#editRequest">
+                                            Edit Request
+                                        </button>
 
-                                            <!-- Tombol Edit Verifikasi (hanya jika role admin) -->
-                                            <?php if ($this->session->userdata('idrole') == 1) { ?>
-                                                <button type="button" class="btn btn-success btn-verify" data-id="<?= $dtovalue->idtime_off ?>" data-reason="<?= $dtovalue->reason ?>" data-date="<?= $dtovalue->date ?>" data-bs-toggle="modal" data-bs-target="#modalVerify">
-                                                    Edit Verifikasi
-                                                </button>
-                                            <?php } ?>
-                                        </td>
-                                    </tr>
+                                        <!-- Tombol Edit Verifikasi (hanya jika role admin) -->
+                                        <?php if ($this->session->userdata('idrole') == 1) { ?>
+                                        <button type="button" class="btn btn-success btn-verify" data-id="<?= $dtovalue->idtime_off ?>" data-reason="<?= $dtovalue->reason ?>" data-date="<?= $dtovalue->date ?>" data-bs-toggle="modal" data-bs-target="#modalVerify">
+                                            Edit Verifikasi
+                                        </button>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
                                 <?php } ?>
                             </tbody>
                         </table>
@@ -230,14 +230,14 @@
 
                     // Check if we need to show logout modal after successful submission
                     <?php if ($this->session->flashdata('show_logout_modal')) : ?>
-                        // Clear the flashdata so it doesn't show again on refresh
-                        <?php $this->session->unset_userdata('show_logout_modal'); ?>
+                    // Clear the flashdata so it doesn't show again on refresh
+                    <?php $this->session->unset_userdata('show_logout_modal'); ?>
 
-                        // Show the logout confirmation modal
-                        setTimeout(function() {
-                            var logoutModal = new bootstrap.Modal(document.getElementById('logoutConfirmationModal'));
-                            logoutModal.show();
-                        }, 1000); // Show after 1 second delay
+                    // Show the logout confirmation modal
+                    setTimeout(function() {
+                        var logoutModal = new bootstrap.Modal(document.getElementById('logoutConfirmationModal'));
+                        logoutModal.show();
+                    }, 1000); // Show after 1 second delay
                     <?php endif; ?>
                 });
 

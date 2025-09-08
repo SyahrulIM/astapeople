@@ -37,6 +37,29 @@
                                                 <label for="inputEmail" class="form-label">Email</label>
                                                 <input type="email" class="form-control" id="inputEmail" name="inputEmail">
                                             </div>
+                                            <div class="mb-3">
+                                                <label for="inputAddressNow" class="form-label">Alamat Sekarang</label>
+                                                <input type="text" class="form-control" id="inputAddressNow" name="inputAddressNow">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="inputPlaceBirth" class="form-label">Tempat Lahir</label>
+                                                <input type="text" class="form-control" id="inputAddressNow" name="inputAddressNow">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="inputReligion" class="form-label">Agama</label>
+                                                <select name="inputReligion" id="inputReligion" class="form-select">
+                                                    <option value="" selected disabled>Pilih</option>
+                                                    <option value="islam">Islam</option>
+                                                    <option value="kristen">kristen</option>
+                                                    <option value="hindu">Hindu</option>
+                                                    <option value="budha">Budha</option>
+                                                    <option value="konghucu">Konghucu</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="inputHusbandWife" class="form-label">Nama Suami / Istri</label>
+                                                <input type="text" class="form-control" id="inputHusbandWife" name="inputHusbandWife">
+                                            </div>
                                         </div>
                                         <div class="col">
                                             <div class="mb-3">
@@ -46,6 +69,26 @@
                                             <div class="mb-3">
                                                 <label for="inputHandphone" class="form-label">Handphone</label>
                                                 <input type="text" class="form-control" id="inputHandphone" name="inputHandphone">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="inputAddressKtp" class="form-label">Alamat KTP</label>
+                                                <input type="text" class="form-control" id="inputAddressKtp" name="inputAddressKtp">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="inputDateBirth" class="form-label">Tanggal Lahir</label>
+                                                <input type="date" class="form-control" id="inputDateBirth" name="inputDateBirth">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="inputStatusMerried" class="form-label">Status Kawin</label>
+                                                <select name="inputStatusMerried" id="inputStatusMerried" class="form-select">
+                                                    <option value="" selected disabled>Pilih</option>
+                                                    <option value="belum_Kawin">Belum Kawin</option>
+                                                    <option value="sudah_Kawin">Sudah Kawin</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="inputNumberChildren" class="form-label">Jumlah Anak</label>
+                                                <input type="number" max="100" class="form-control" id="inputNumberChildren" name="inputNumberChildren" oninput="if(this.value > 100) this.value = 100;">
                                             </div>
                                         </div>
                                     </div>

@@ -1,8 +1,6 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-require_once APPPATH . '../vendor/autoload.php';
-
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class Register extends CI_Controller

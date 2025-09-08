@@ -28,6 +28,11 @@ class Time_off extends CI_Controller
                 ->get('ppl_time_off')->result();
         } else {
             $data_time_off = $this->db
+                ->select('ppl_time_off.date as date,
+                      ppl_time_off.reason as reason,
+                      ppl_time_off.is_verify as is_verify,
+                      ppl_time_off.idppl_time_off as idtime_off
+                      ')
                 ->where('iduser', $this->session->userdata('iduser'))
                 ->get('ppl_time_off')
                 ->result();
