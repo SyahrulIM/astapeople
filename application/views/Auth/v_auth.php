@@ -33,17 +33,17 @@
 
             <!-- Flash messages -->
             <?php if ($this->session->flashdata('error')) : ?>
-              <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                <?= $this->session->flashdata('error') ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
+            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+              <?= $this->session->flashdata('error') ?>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
             <?php endif; ?>
 
             <?php if ($this->session->flashdata('success')) : ?>
-              <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                <?= $this->session->flashdata('success') ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
+            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+              <?= $this->session->flashdata('success') ?>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
             <?php endif; ?>
             <!-- End -->
 
@@ -87,7 +87,7 @@
                 </div>
                 <div class="col-12">
                   <div class="d-grid">
-                    <a href="<?php echo base_url('register'); ?>" type="button" class="btn btn-secondary">Register</a>
+                    <a href="https://forms.gle/hC56Bj8MPkmsG1o6A" type="button" class="btn btn-secondary">Register</a>
                   </div>
                 </div>
               </div>

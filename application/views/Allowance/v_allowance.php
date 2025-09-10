@@ -59,7 +59,7 @@ if ($start && $end) {
     <div class="row mt-4">
         <div class="col">
             <a href="<?php echo base_url('allowance/exportExcel?absensi_start=' . $start . '&absensi_end=' . $end); ?>">
-                <button type="button" class="btn btn-success" hidden>
+                <button type="button" class="btn btn-success">
                     <i class="fa-solid fa-file-excel"></i> Export Excel
                 </button>
             </a>
@@ -73,9 +73,9 @@ if ($start && $end) {
                         <th>No</th>
                         <th>Full Name</th>
                         <?php if ($show_periode == '1') : ?>
-                            <?php foreach ($dates as $d) : ?>
-                                <th><?= date('d M', strtotime($d)) ?></th>
-                            <?php endforeach; ?>
+                        <?php foreach ($dates as $d) : ?>
+                        <th><?= date('d M', strtotime($d)) ?></th>
+                        <?php endforeach; ?>
                         <?php endif; ?>
                         <th>Total Attendance</th>
                         <th>Meal Allowance (Rp)</th>
@@ -84,20 +84,20 @@ if ($start && $end) {
                 </thead>
                 <tbody>
                     <?php if (!empty($results)) : $no = 1; ?>
-                        <?php foreach ($results as $emp) : ?>
-                            <tr>
-                                <td><?= $no++ ?></td>
-                                <td><?= $emp['name'] ?></td>
-                                <?php if ($show_periode == '1') : ?>
-                                    <?php foreach ($dates as $d) : ?>
-                                        <td class="text-center"><?= $emp['presence'][$d] ?? '-' ?></td>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                                <td class="text-center"><?= $emp['total_attend'] ?></td>
-                                <td class="text-end">20,000</td>
-                                <td class="text-end"><?= number_format($emp['total_attend'] * 20000, 0, ',', '.') ?></td>
-                            </tr>
+                    <?php foreach ($results as $emp) : ?>
+                    <tr>
+                        <td><?= $no++ ?></td>
+                        <td><?= $emp['name'] ?></td>
+                        <?php if ($show_periode == '1') : ?>
+                        <?php foreach ($dates as $d) : ?>
+                        <td class="text-center"><?= $emp['presence'][$d] ?? '-' ?></td>
                         <?php endforeach; ?>
+                        <?php endif; ?>
+                        <td class="text-center"><?= $emp['total_attend'] ?></td>
+                        <td class="text-end">20,000</td>
+                        <td class="text-end"><?= number_format($emp['total_attend'] * 20000, 0, ',', '.') ?></td>
+                    </tr>
+                    <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
             </table>
