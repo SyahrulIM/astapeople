@@ -87,7 +87,7 @@
                 </div>
                 <div class="col-12">
                   <div class="d-grid">
-                    <a href="<?php echo base_url('register'); ?>" type="button" class="btn btn-secondary">Register</a>
+                    <a href="https://forms.gle/hC56Bj8MPkmsG1o6A" type="button" class="btn btn-secondary">Register</a>
                   </div>
                 </div>
               </div>

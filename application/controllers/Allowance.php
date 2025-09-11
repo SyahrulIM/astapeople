@@ -3,6 +3,8 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class Allowance extends CI_Controller
 {
@@ -79,7 +81,7 @@ class Allowance extends CI_Controller
                     if ($check_in_time <= $late_limit && $check_out_time >= $early_limit) {
                         $got_meal = true;
                     }
-                } elseif (strtolower($row->timeoff_reason) === 'dinas' && $row->is_verify == 1) {
+                } elseif (strtolower($row->timeoff_reason ?? '') === 'dinas' && $row->is_verify == 1) {
                     $got_meal = true;
                 }
 
@@ -102,7 +104,7 @@ class Allowance extends CI_Controller
                         $grouped[$id]['presence'][$date] = $check_symbol;
                         $grouped[$id]['total_attend']++;
                     }
-                } elseif (strtolower($row->timeoff_reason) === 'dinas' && $row->is_verify == 1) {
+                } elseif (strtolower($row->timeoff_reason ?? '') === 'dinas' && $row->is_verify == 1) {
                     $grouped[$id]['presence'][$date] = '<span class="text-success fw-bold">✓</span>';
                     $grouped[$id]['total_attend']++;
                 }
@@ -141,7 +143,6 @@ class Allowance extends CI_Controller
         $rows = $query->result();
         $grouped = [];
 
-        // Create date range
         $period = new DatePeriod(
             new DateTime($start),
             new DateInterval('P1D'),
@@ -167,9 +168,12 @@ class Allowance extends CI_Controller
 
             $got_meal = false;
 
+            $timeoff_reason = strtolower(trim($row->timeoff_reason ?? ''));
+            $is_verify = intval($row->is_verify);
+
             if ($row->check_in && $row->check_out) {
                 $got_meal = true;
-            } elseif (strtolower($row->timeoff_reason) === 'dinas' && $row->is_verify == 1) {
+            } elseif ($timeoff_reason === 'dinas' && $is_verify === 1) {
                 $got_meal = true;
             }
 
@@ -177,29 +181,24 @@ class Allowance extends CI_Controller
             if ($got_meal) $grouped[$id]['total_attend']++;
         }
 
-        // Create Spreadsheet
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Set document properties
         $spreadsheet->getProperties()
             ->setCreator("Your System")
             ->setTitle("Meal Allowance Report")
             ->setSubject("Meal Allowance from {$start} to {$end}");
 
-        // Set header styles
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
             'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
         ];
 
-        // Set data styles
         $dataStyle = [
             'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
         ];
 
-        // Header row
         $col = 'A';
         $sheet->setCellValue($col++ . '1', 'No');
         $sheet->setCellValue($col++ . '1', 'Full Name');
@@ -212,10 +211,8 @@ class Allowance extends CI_Controller
         $sheet->setCellValue($col++ . '1', 'Meal Allowance (Rp)');
         $sheet->setCellValue($col . '1', 'Total Allowance (Rp)');
 
-        // Apply header styles
         $sheet->getStyle('A1:' . $col . '1')->applyFromArray($headerStyle);
 
-        // Body data
         $rowNum = 2;
         $no = 1;
         foreach ($grouped as $emp) {
@@ -224,41 +221,38 @@ class Allowance extends CI_Controller
             $sheet->setCellValue($col++ . $rowNum, $emp['name']);
 
             foreach ($dates as $d) {
+                $cell = $col . $rowNum;
                 $value = $emp['presence'][$d] ?? '-';
-                $sheet->setCellValue($col++ . $rowNum, $value);
+                $sheet->setCellValue($cell, $value);
 
-                // Optional: Add color for checkmarks
                 if ($value === '✓') {
-                    $sheet->getStyle($col - 1 . $rowNum)->getFont()->getColor()->setRGB('006100');
+                    $sheet->getStyle($cell)->getFont()->getColor()->setRGB('006100');
                 } elseif ($value === '-') {
-                    $sheet->getStyle($col - 1 . $rowNum)->getFont()->getColor()->setRGB('FF0000');
+                    $sheet->getStyle($cell)->getFont()->getColor()->setRGB('FF0000');
                 }
+
+                $col++;
             }
 
             $sheet->setCellValue($col++ . $rowNum, $emp['total_attend']);
             $sheet->setCellValue($col++ . $rowNum, 20000);
             $sheet->setCellValue($col . $rowNum, $emp['total_attend'] * 20000);
 
-            // Format currency
-            $sheet->getStyle($col - 1 . $rowNum)->getNumberFormat()->setFormatCode('#,##0');
+            $sheet->getStyle(chr(ord($col) - 1) . $rowNum)->getNumberFormat()->setFormatCode('#,##0');
             $sheet->getStyle($col . $rowNum)->getNumberFormat()->setFormatCode('#,##0');
 
             $rowNum++;
         }
 
-        // Apply data borders
         $lastCol = $col;
         $sheet->getStyle('A1:' . $lastCol . ($rowNum - 1))->applyFromArray($dataStyle);
 
-        // Auto size columns
         foreach (range('A', $lastCol) as $columnID) {
             $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
 
-        // Freeze first row and first two columns
         $sheet->freezePane('C2');
 
-        // Output
         $filename = 'meal_allowance_' . date('Ymd_His') . '.xlsx';
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
 
