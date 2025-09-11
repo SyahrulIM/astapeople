@@ -75,6 +75,43 @@ class Time_off extends CI_Controller
             $this->session->set_flashdata('show_logout_modal', true); // Set flag for logout modal
         }
 
+        // Start Kirim pesan WhatsApp via Fonnte
+        $this->db->select('handphone');
+        $this->db->from('user');
+        $this->db->where('idrole', 1);
+        $this->db->where('is_whatsapp', 1);
+        $this->db->where('status', 1);
+        $this->db->where('handphone IS NOT NULL');
+        $query = $this->db->get();
+        $results = $query->result();
+
+        $targets = array_column($results, 'handphone');
+        $target = count($targets) > 1 ? implode(',', $targets) : (count($targets) === 1 ? $targets[0] : '');
+
+        if ($target !== '') {
+            $token = 'EyuhsmTqzeKaDknoxdxt';
+            $message = 'Akun dengan Username: ' . $username . ', Email: ' . $email . ', dan No.Handphone: ' . $handphone . ' membutuhkan Verifikasi dari superadmin di Asta People. Mohon segera diproses, terima kasih.';
+
+            $curl = curl_init();
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => 'https://api.fonnte.com/send',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => array(
+                    'target' => $target,
+                    'message' => $message,
+                    'countryCode' => '62',
+                ),
+                CURLOPT_HTTPHEADER => array(
+                    'Authorization: ' . $token
+                ),
+            ));
+
+            curl_exec($curl);
+            curl_close($curl);
+        }
+        // End
+
         redirect('time_off');
     }
 
