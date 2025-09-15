@@ -52,10 +52,11 @@ class Time_off extends CI_Controller
     {
         $reason = $this->input->post('reason');
         $date_request = $this->input->post('dateRequest');
+        $iduser = $this->session->userdata('iduser');
 
         $data_exist = $this->db
             ->where('date', $date_request)
-            ->where('iduser', $this->session->userdata('iduser'))
+            ->where('iduser', $iduser)
             ->get('ppl_time_off')
             ->num_rows();
 
@@ -63,7 +64,7 @@ class Time_off extends CI_Controller
             $this->session->set_flashdata('error', 'Request untuk tanggal tersebut sudah ada.');
         } else {
             $addRequest = [
-                'iduser' => $this->session->userdata('iduser'),
+                'iduser' => $iduser,
                 'reason' => $reason,
                 'date' => $date_request,
                 'is_verify' => 0,
@@ -72,16 +73,19 @@ class Time_off extends CI_Controller
 
             $this->db->insert('ppl_time_off', $addRequest);
             $this->session->set_flashdata('success', 'Request berhasil ditambahkan.');
-            $this->session->set_flashdata('show_logout_modal', true); // Set flag for logout modal
+            $this->session->set_flashdata('show_logout_modal', true);
         }
+
+        // Ambil data user yang request
+        $user = $this->db->get_where('user', ['iduser' => $iduser])->row();
 
         // Start Kirim pesan WhatsApp via Fonnte
         $this->db->select('handphone');
         $this->db->from('user');
-        $this->db->where('idrole', 1);
+        $this->db->where_in('idrole', [1, 6]); // idrole 1 atau 6
         $this->db->where('is_whatsapp', 1);
         $this->db->where('status', 1);
-        $this->db->where('handphone IS NOT NULL');
+        $this->db->where('handphone IS NOT NULL', null, false);
         $query = $this->db->get();
         $results = $query->result();
 
@@ -90,7 +94,11 @@ class Time_off extends CI_Controller
 
         if ($target !== '') {
             $token = 'EyuhsmTqzeKaDknoxdxt';
-            $message = 'Akun dengan Username: ' . $username . ', Email: ' . $email . ', dan No.Handphone: ' . $handphone . ' membutuhkan Verifikasi dari superadmin di Asta People. Mohon segera diproses, terima kasih.';
+            $message = "📢 Pemberitahuan Izin Baru\n\n"
+                . "👤 Username: {$user->username}\n"
+                . "📅 Tanggal: {$date_request}\n"
+                . "📝 Alasan: {$reason}\n\n"
+                . "Telah ditambahkan, Butuh diverifikasi. Terima kasih 🙏";
 
             $curl = curl_init();
             curl_setopt_array($curl, array(
@@ -110,7 +118,6 @@ class Time_off extends CI_Controller
             curl_exec($curl);
             curl_close($curl);
         }
-        // End
 
         redirect('time_off');
     }

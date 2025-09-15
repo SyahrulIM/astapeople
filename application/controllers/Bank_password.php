@@ -14,6 +14,8 @@ class Bank_password extends CI_Controller
 
     public function index()
     {
+        $account = $this->input->get('inputFilterAccount');
+
         $this->db->select('bp.*, 
         GROUP_CONCAT(u.full_name SEPARATOR ", ") as pic_names,
         GROUP_CONCAT(pic.iduser) as pic_ids');
@@ -21,6 +23,7 @@ class Bank_password extends CI_Controller
         $this->db->join('ppl_pic_bank_password pic', 'bp.idppl_bank_password = pic.idppl_bank_password', 'left');
         $this->db->join('user u', 'pic.iduser = u.iduser', 'left');
         $this->db->where('bp.status', 1);
+        $this->db->where('bp.account', $account);
         $this->db->group_by('bp.idppl_bank_password');
 
         $query = $this->db->get();

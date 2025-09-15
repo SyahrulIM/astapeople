@@ -18,7 +18,50 @@
                         <option value="" <?php if ($this->input->get('inputFilterAccount') === '') {
                                                 echo 'selected';
                                             } ?>>Semua</option>
-                        <!-- Options remain the same -->
+                        <option value="gmail">Gmail</option>
+                                <option value="tokopedia">Tokopedia</option>
+                                <option value="shopee">Shopee</option>
+                                <option value="tiktok">Tiktok</option>
+                                <option value="lazada">Lazada</option>
+                                <option value="forstock">Forstock</option>
+                                <option value="facebook">Facebook</option>
+                                <option value="instagram">Instagram</option>
+                                <option value="desty">Desty</option>
+                                <option value="zalora">Zalora</option>
+                                <option value="blibli">Blibli</option>
+                                <option value="kotime">Kotime</option>
+                                <option value="jagoan hosting">Jagoan Hosting</option>
+                                <option value="email">Email</option>
+                                <option value="fast">Fast</option>
+                                <option value="dropbox">Dropbox</option>
+                                <option value="compro">Compro</option>
+                                <option value="website">Website</option>
+                                <option value="lynk">Lynk</option>
+                                <option value="linktree">Linktree</option>
+                                <option value="apple">Apple</option>
+                                <option value="canva">Canva</option>
+                                <option value="pinterest">Pinterest</option>
+                                <option value="google">Google</option>
+                                <option value="ginee">Ginee</option>
+                                <option value="tiktokshop kotime">Tiktokshop Kotime</option>
+                                <option value="rumahweb">Rumahweb</option>
+                                <option value="github">Github</option>
+                                <option value="git pat">Git Pat</option>
+                                <option value="ssh-access cpanel">SSH Access Cpanel</option>
+                                <option value="tiktok kotime">Tiktok Kotime</option>
+                                <option value="gopay">Gopay</option>
+                                <option value="tokopedia kotime">Tokopedia Kotime</option>
+                                <option value="shopee kotime">Shopee Kotime</option>
+                                <option value="mitra asta tokopedia">Mitra Asta Tokopedia</option>
+                                <option value="evermos">Evermos</option>
+                                <option value="forstok">Forstok</option>
+                                <option value="dana">Dana</option>
+                                <option value="microsoft">Microsoft</option>
+                                <option value="olx">OLX</option>
+                                <option value="xendit">Xendit</option>
+                                <option value="brevo">Brevo</option>
+                                <option value="cctv d9">CCTV D9</option>
+                                <option value="cctv d17">CCTV D17</option>
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -61,7 +104,6 @@
                         <div class="mb-3">
                             <label class="form-label">Account</label>
                             <select class="form-select" name="account" required>
-                                <option value="">-- Pilih Account --</option>
                                 <option value="">-- Pilih Account --</option>
                                 <option value="gmail">Gmail</option>
                                 <option value="tokopedia">Tokopedia</option>
