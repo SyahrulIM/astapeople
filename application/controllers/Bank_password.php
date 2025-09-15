@@ -20,6 +20,7 @@ class Bank_password extends CI_Controller
         $this->db->from('ppl_bank_password bp');
         $this->db->join('ppl_pic_bank_password pic', 'bp.idppl_bank_password = pic.idppl_bank_password', 'left');
         $this->db->join('user u', 'pic.iduser = u.iduser', 'left');
+        $this->db->where('bp.status', 1);
         $this->db->group_by('bp.idppl_bank_password');
 
         $query = $this->db->get();
@@ -27,7 +28,7 @@ class Bank_password extends CI_Controller
         $data = [
             'title' => 'Bank Password',
             'data_bp' => $query->result(),
-            'users' => $this->db->get('user')->result() // ambil list user untuk PIC
+            'users' => $this->db->get('user')->result()
         ];
 
         $this->load->view('theme/v_head', $data);
@@ -62,7 +63,8 @@ class Bank_password extends CI_Controller
             foreach ($picArray as $iduser) {
                 $this->db->insert('ppl_pic_bank_password', [
                     'idppl_bank_password' => $idppl_bank_password,
-                    'iduser' => $iduser
+                    'iduser' => $iduser,
+                    'status' => 1
                 ]);
             }
         }
@@ -143,17 +145,30 @@ class Bank_password extends CI_Controller
 
     public function deleteBankAccount($id)
     {
-        // Delete related PICs first
-        $this->db->where('idppl_bank_password', $id);
-        $this->db->delete('ppl_pic_bank_password');
+        // Check if this is a POST request
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Invalid request method.'
+            ]);
+            return;
+        }
 
-        // Delete main record
+        // Update related PICs status to 0 (soft delete)
+        $this->db->set('status', 0); // Changed to 'status' assuming that's your soft delete column
         $this->db->where('idppl_bank_password', $id);
-        $this->db->delete('ppl_bank_password');
+        $success = $this->db->update('ppl_bank_password');
 
-        echo json_encode([
-            'status' => 'success',
-            'message' => 'Account & Password berhasil dihapus.'
-        ]);
+        if ($success) {
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Account & Password berhasil dihapus.'
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Gagal menghapus data.'
+            ]);
+        }
     }
 }

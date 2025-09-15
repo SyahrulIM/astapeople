@@ -507,7 +507,8 @@
                             alert(res.message);
                         }
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
                         alert("Gagal menghapus data. Coba lagi!");
                     }
                 });
