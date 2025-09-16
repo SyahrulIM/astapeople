@@ -17,7 +17,7 @@ class Allowance extends CI_Controller
         }
     }
 
-public function index()
+    public function index()
     {
         $start = $this->input->get('absensi_start');
         $end = $this->input->get('absensi_end');
@@ -122,8 +122,6 @@ public function index()
                 }
 
                 if ($got_meal) $grouped[$id]['total_attend']++;
-
-
             }
 
             $data['results'] = $grouped;

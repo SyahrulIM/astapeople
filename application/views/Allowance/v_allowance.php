@@ -67,40 +67,40 @@ if ($start && $end) {
     </div>
     <div class="row">
         <div class="col">
-<table id="tableMeal" class="table table-striped table-bordered nowrap" style="width:100%">
-    <thead class="table-dark">
-        <tr>
-            <th>No</th>
-            <th>Full Name</th>
-            <?php if ($show_periode == '1') : ?>
-            <?php foreach ($dates as $d) : ?>
-            <th><?= date('d M', strtotime($d)) ?></th>
-            <?php endforeach; ?>
-            <?php endif; ?>
-            <th>Total Attendance</th>
-            <th>Meal Allowance (Rp)</th>
-            <th>Total Allowance (Rp)</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php if (!empty($results)) : $no = 1; ?>
-        <?php foreach ($results as $emp) : ?>
-        <tr>
-            <td><?= $no++ ?></td>
-            <td><?= $emp['name'] ?></td>
-            <?php if ($show_periode == '1') : ?>
-            <?php foreach ($dates as $d) : ?>
-            <td class="text-center"><?= $emp['presence'][$d] ?? '-' ?></td>
-            <?php endforeach; ?>
-            <?php endif; ?>
-            <td class="text-center"><?= $emp['total_attend'] ?></td>
+            <table id="tableMeal" class="table table-striped table-bordered nowrap" style="width:100%">
+                <thead class="table-dark">
+                    <tr>
+                        <th>No</th>
+                        <th>Full Name</th>
+                        <?php if ($show_periode == '1') : ?>
+                        <?php foreach ($dates as $d) : ?>
+                        <th><?= date('d M', strtotime($d)) ?></th>
+                        <?php endforeach; ?>
+                        <?php endif; ?>
+                        <th>Total Attendance</th>
+                        <th>Meal Allowance (Rp)</th>
+                        <th>Total Allowance (Rp)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($results)) : $no = 1; ?>
+                    <?php foreach ($results as $emp) : ?>
+                    <tr>
+                        <td><?= $no++ ?></td>
+                        <td><?= $emp['name'] ?></td>
+                        <?php if ($show_periode == '1') : ?>
+                        <?php foreach ($dates as $d) : ?>
+                        <td class="text-center"><?= $emp['presence'][$d] ?? '-' ?></td>
+                        <?php endforeach; ?>
+                        <?php endif; ?>
+                        <td class="text-center"><?= $emp['total_attend'] ?></td>
                         <td class="text-end">20,000</td>
-                        <td class="text-end"><?= number_format($emp['total_attend'] * 20000000, 0, ',', '.') ?>
-        </tr>
-        <?php endforeach; ?>
-        <?php endif; ?>
-    </tbody>
-</table>
+                        <td class="text-end"><?= number_format($emp['total_attend'] * 20000, 0, ',', '.') ?>
+                    </tr>
+                    <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
