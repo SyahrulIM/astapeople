@@ -65,14 +65,15 @@ public function index()
                 $grouped[$id] = [
                     'name' => $row->name,
                     'presence' => [],
-                    'total_attend' => 0
+                    'total_attend' => 0,
+                    'total_meal' => 0
                 ];
             }
 
-            // --- Default simbol ---
+            // Default simbol
             $grouped[$id]['presence'][$date] = '-';
 
-            // --- Cek kehadiran normal ---
+            // Cek kehadiran normal
             if ($row->check_in && $row->check_out) {
                 $check_in_time = strtotime($row->check_in);
                 $check_out_time = strtotime($row->check_out);
@@ -89,11 +90,14 @@ public function index()
 
                     $grouped[$id]['presence'][$date] = $check_symbol;
 
-                    // Hitung hadir + meal allowance
-                    $grouped[$id]['total_attend'] += 2;
+                    // Hadir (1 poin)
+                    $grouped[$id]['total_attend']++;
+
+                    // Meal allowance (1 poin)
+                    $grouped[$id]['total_meal']++;
                 }
             } elseif (strtolower($row->timeoff_reason ?? '') === 'dinas') {
-                // Kalau dinas, dianggap hadir + meal sekali saja
+                // Kalau dinas, dianggap hadir tapi tanpa meal
                 $grouped[$id]['presence'][$date] = '<span class="text-success fw-bold">✓</span>';
                 $grouped[$id]['total_attend']++;
             }
