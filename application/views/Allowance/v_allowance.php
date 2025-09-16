@@ -94,8 +94,8 @@ if ($start && $end) {
                         <?php endforeach; ?>
                         <?php endif; ?>
                         <td class="text-center"><?= $emp['total_attend'] ?></td>
-                        <td class="text-end">20,000</td>
-                        <td class="text-end"><?= number_format($emp['total_attend'] * 20000, 0, ',', '.') ?></td>
+                        <td class="text-center"><?= $emp['total_meal'] ?></td>
+                        <td class="text-end"><?= number_format($emp['total_meal'] * 20000, 0, ',', '.') ?></td>
                     </tr>
                     <?php endforeach; ?>
                     <?php endif; ?>

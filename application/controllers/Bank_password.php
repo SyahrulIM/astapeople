@@ -15,6 +15,7 @@ class Bank_password extends CI_Controller
     public function index()
     {
         $account = $this->input->get('inputFilterAccount');
+        $category = $this->input->get('inputFilterCategory');
 
         $this->db->select('bp.*, 
         GROUP_CONCAT(u.full_name SEPARATOR ", ") as pic_names,
@@ -23,7 +24,12 @@ class Bank_password extends CI_Controller
         $this->db->join('ppl_pic_bank_password pic', 'bp.idppl_bank_password = pic.idppl_bank_password', 'left');
         $this->db->join('user u', 'pic.iduser = u.iduser', 'left');
         $this->db->where('bp.status', 1);
-        $this->db->where('bp.account', $account);
+        if ($account) {
+            $this->db->where('bp.account', $account);
+        }
+        if ($category) {
+            $this->db->where('bp.category', $category);
+        }
         $this->db->group_by('bp.idppl_bank_password');
 
         $query = $this->db->get();
@@ -78,7 +84,6 @@ class Bank_password extends CI_Controller
 
     public function edit($id)
     {
-        // Get the bank account data with PIC information
         $this->db->select('bp.*, 
         GROUP_CONCAT(u.iduser SEPARATOR ",") as pic_ids,
         GROUP_CONCAT(u.full_name SEPARATOR ", ") as pic_names');
@@ -91,15 +96,15 @@ class Bank_password extends CI_Controller
         $query = $this->db->get();
         $data = $query->row();
 
+        // setelah $data = $query->row();
         if ($data) {
+            // hapus whitespace yang tidak perlu agar di JS langsung cocok dengan option[value]
+            $data->pic_ids = isset($data->pic_ids) && $data->pic_ids !== null
+                ? preg_replace('/\s+/', '', $data->pic_ids)
+                : '';
             echo json_encode([
                 'status' => 'success',
                 'data' => $data
-            ]);
-        } else {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Data not found'
             ]);
         }
     }
@@ -118,11 +123,9 @@ class Bank_password extends CI_Controller
             'updated_date' => date("Y-m-d H:i:s")
         ];
 
-        // Update main table
         $this->db->where('idppl_bank_password', $id);
         $this->db->update('ppl_bank_password', $data);
 
-        // Handle PICs - first remove existing
         $this->db->where('idppl_bank_password', $id);
         $this->db->delete('ppl_pic_bank_password');
 

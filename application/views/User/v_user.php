@@ -176,7 +176,6 @@
                                     <td><img src="<?php echo base_url('assets/image/user/' . $uvalue->foto); ?>" alt="<?php echo $uvalue->foto; ?>" width="100px" height="100px" style="border-radius: 50%; object-fit: cover;"></td>
                                     <td><?php echo $uvalue->nama_role; ?></td>
                                     <td>
-                                        <?php if ($uvalue->is_verify == 1) { ?>
                                         <?php if ($uvalue->iduser != 4) { ?>
                                         <button type="button" class="btn btn-warning btnEditUser" data-full_name="<?= $uvalue->full_name ?>" data-username="<?= $uvalue->username ?>" data-email="<?= $uvalue->email ?>" data-foto="<?= $uvalue->foto ?>" data-idrole="<?= $uvalue->idrole ?>" data-bs-toggle="modal" data-bs-target="#editUser">
                                             <i class="fa fa-edit"></i> File Pengguna
@@ -191,11 +190,6 @@
                                                 <i class="fa fa-edit"></i> File Pengguna PDF
                                             </button>
                                         </a>
-                                        <?php } ?>
-                                        <?php } else { ?>
-                                        <button type="button" class="btn btn-success btnOpenVerifyModal" data-iduser="<?= $uvalue->iduser ?>" data-nama="<?= $uvalue->full_name ?>" data-bs-toggle="modal" data-bs-target="#verifyModal">
-                                            <i class="fa-solid fa-circle-check"></i> Verify
-                                        </button>
                                         <?php } ?>
                                     </td>
                                 </tr>
