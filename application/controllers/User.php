@@ -272,4 +272,54 @@ class User extends CI_Controller
 
         $this->load->view('User/v_user_pdf', $data);
     }
+
+    public function change_foto()
+    {
+        $this->load->library('upload');
+        $iduser = $this->session->userdata('iduser');
+
+        // Ambil data user lama
+        $oldUser = $this->db->get_where('user', ['iduser' => $iduser])->row();
+        if (!$oldUser) {
+            $this->session->set_flashdata('error', 'User tidak ditemukan.');
+            redirect($_SERVER['HTTP_REFERER']);
+            return;
+        }
+
+        // Cek upload
+        if (!empty($_FILES['foto']['name'])) {
+            $config['upload_path'] = './assets/image/user/';
+            $config['allowed_types'] = 'jpg|jpeg|png';
+            $config['file_name'] = 'foto_' . time();
+
+            $this->upload->initialize($config);
+
+            if ($this->upload->do_upload('foto')) {
+                // Hapus foto lama kalau ada
+                if ($oldUser->foto && file_exists('./assets/image/user/' . $oldUser->foto)) {
+                    unlink('./assets/image/user/' . $oldUser->foto);
+                }
+
+                $newFoto = $this->upload->data('file_name');
+
+                // Update ke DB
+                $this->db->where('iduser', $iduser)->update('user', [
+                    'foto' => $newFoto,
+                    'updated_by' => $this->session->userdata('username'),
+                    'updated_date' => date("Y-m-d H:i:s")
+                ]);
+
+                // Update session biar langsung ke-refresh
+                $this->session->set_userdata('foto', $newFoto);
+
+                $this->session->set_flashdata('success', 'Foto berhasil diganti.');
+            } else {
+                $this->session->set_flashdata('error', $this->upload->display_errors());
+            }
+        } else {
+            $this->session->set_flashdata('error', 'Silakan pilih foto terlebih dahulu.');
+        }
+
+        redirect($_SERVER['HTTP_REFERER']);
+    }
 }

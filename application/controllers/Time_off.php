@@ -82,7 +82,7 @@ class Time_off extends CI_Controller
         // Start Kirim pesan WhatsApp via Fonnte
         $this->db->select('handphone');
         $this->db->from('user');
-        $this->db->where_in('idrole', [1, 6]); // idrole 1 atau 6
+        $this->db->where_in('idrole', [1, 6]);
         $this->db->where('is_whatsapp', 1);
         $this->db->where('status', 1);
         $this->db->where('handphone IS NOT NULL', null, false);

@@ -54,6 +54,29 @@
         </div>
         <!-- Page content wrapper-->
         <div id="page-content-wrapper">
+
+            <!-- Start Modal Upload Foto -->
+            <div class="modal fade" id="changeFotoModal" tabindex="-1" aria-labelledby="changeFotoModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form action="<?= base_url('user/change_foto'); ?>" method="post" enctype="multipart/form-data">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="changeFotoModalLabel">Upload Foto Baru</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <img src="<?php echo base_url('assets/image/user/' . $this->session->userdata('foto')); ?>" alt="Preview Foto" class="img-thumbnail mb-3" width="120px" id="previewFoto">
+                                <input type="file" class="form-control" name="foto" id="fotoInput" accept="image/*" required>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-primary">Simpan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- End -->
             <!-- Top navigation-->
             <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
                 <div class="container-fluid">
@@ -67,9 +90,18 @@
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                     <a class="dropdown-item" href="<?php echo base_url('auth/logout'); ?>">Log Out</a>
-                                </div>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changeFotoModal">Change Foto</a> </div>
                             </li>
                         </ul>
                     </div>
                 </div>
             </nav>
+
+            <script>
+                document.getElementById("fotoInput").addEventListener("change", function(event) {
+                    const [file] = event.target.files;
+                    if (file) {
+                        document.getElementById("previewFoto").src = URL.createObjectURL(file);
+                    }
+                });
+            </script>
