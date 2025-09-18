@@ -52,7 +52,7 @@
 
                             <div class="mb-3">
                                 <label for="file" class="form-label">Pilih File Excel:</label>
-                                <input type="file" class="form-control" name="file" id="file" accept=".xlsx" required>
+                                <input type="file" class="form-control" name="file" id="file" accept=".xlsx,.xls,.csv" required>
                             </div>
                             <button type="submit" class="btn btn-primary">Import</button>
                         </div>
@@ -61,17 +61,17 @@
                 <!-- End -->
                 <!-- Flash messages -->
                 <?php if ($this->session->flashdata('error')) : ?>
-                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                        <?= $this->session->flashdata('error') ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
+                <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                    <?= $this->session->flashdata('error') ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
                 <?php endif; ?>
 
                 <?php if ($this->session->flashdata('success')) : ?>
-                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                        <?= $this->session->flashdata('success') ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
+                <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                    <?= $this->session->flashdata('success') ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
                 <?php endif; ?>
                 <!-- End -->
                 <div class="row">
@@ -87,11 +87,11 @@
                             <tbody>
                                 <?php $no = 1;
                                 foreach ($presence as $pkey => $pvalue) { ?>
-                                    <tr>
-                                        <td><?php echo $no++; ?></td>
-                                        <td><?php echo $pvalue->created_by; ?></td>
-                                        <td><?php echo $pvalue->created_date; ?></td>
-                                    </tr>
+                                <tr>
+                                    <td><?php echo $no++; ?></td>
+                                    <td><?php echo $pvalue->created_by; ?></td>
+                                    <td><?php echo $pvalue->created_date; ?></td>
+                                </tr>
                                 <?php } ?>
                             </tbody>
                         </table>

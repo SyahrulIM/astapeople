@@ -38,13 +38,15 @@
                         <i class="fas fa-chevron-down small"></i>
                     </a>
                     <div class="collapse <?= in_array($current, ['presence', 'report', 'allowance', 'time_off', 'bank_password']) ? 'show' : ''; ?>" id="dbpresenceSubmenu">
-                        <?php if ($this->session->userdata('idrole') == 1) { ?>
+                        <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 6) { ?>
                         <a class="list-group-item list-group-item-action list-group-item-light ps-5 <?= ($current == 'presence') ? 'active' : ''; ?>" href="<?= base_url('presence'); ?>">Absensi</a>
                         <?php } ?>
                         <a class="list-group-item list-group-item-action list-group-item-light ps-5 <?= ($current == 'report') ? 'active' : ''; ?>" href="<?= base_url('report'); ?>">Laporan</a>
                         <a class="list-group-item list-group-item-action list-group-item-light ps-5 <?= ($current == 'allowance') ? 'active' : ''; ?>" href="<?= base_url('allowance'); ?>">Tunjangan</a>
                         <a class="list-group-item list-group-item-action list-group-item-light ps-5 <?= ($current == 'time_off') ? 'active' : ''; ?>" href="<?= base_url('time_off'); ?>">Pengajuan Ijin</a>
+                        <?php if ($this->session->userdata('idrole') == 1) { ?>
                         <a class="list-group-item list-group-item-action list-group-item-light ps-5 <?= ($current == 'bank_password') ? 'active' : ''; ?>" href="<?= base_url('bank_password'); ?>">Bank Password</a>
+                        <?php } ?>
                     </div>
                 </div>
                 <?php if ($this->session->userdata('idrole') == 1) { ?>
