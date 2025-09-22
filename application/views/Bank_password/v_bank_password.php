@@ -245,7 +245,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Email</label>
-                            <input type="email" class="form-control" name="email">
+                            <input type="text" class="form-control" name="email">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Password</label>
@@ -307,7 +307,6 @@
                         <div class="mb-3">
                             <label class="form-label">Account</label>
                             <select class="form-select" id="editAccount" name="account" required>
-                                <option value="">-- Pilih Account --</option>
                                 <option value="">-- Pilih Account --</option>
                                 <option value="gmail">Gmail</option>
                                 <option value="tokopedia">Tokopedia</option>
