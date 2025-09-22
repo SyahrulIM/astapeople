@@ -160,11 +160,8 @@
                             document.getElementById('editNamaLengkap').value = full_name;
                             document.getElementById('editUsername').value = username;
                             document.getElementById('editEmail').value = email;
-
-                            // Reset value file karena keamanan browser tidak izinkan isi file input diset via JS
                             document.getElementById('editFoto').value = '';
 
-                            // Set selected option pada select role
                             const selectRole = document.getElementById('editRole');
                             Array.from(selectRole.options).forEach(option => {
                                 if (option.value === idrole) {

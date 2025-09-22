@@ -150,7 +150,7 @@
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    <?php if ($this->session->userdata('idrole') == 1) { ?>
+                                    <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 6) { ?>
                                     <th>Nama</th>
                                     <?php } ?>
                                     <th>Tanggal</th>
@@ -165,7 +165,7 @@
                                 foreach ($data_time_off as $dtokey => $dtovalue) { ?>
                                 <tr>
                                     <td><?= $no++; ?></td>
-                                    <?php if ($this->session->userdata('idrole') == 1) { ?>
+                                    <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 6) { ?>
                                     <td><?= $dtovalue->full_name; ?></td>
                                     <?php } ?>
                                     <td><?= $dtovalue->date; ?></td>
@@ -186,7 +186,7 @@
                                         </button>
 
                                         <!-- Tombol Edit Verifikasi (hanya jika role admin) -->
-                                        <?php if ($this->session->userdata('idrole') == 1) { ?>
+                                        <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 6) { ?>
                                         <button type="button" class="btn btn-success btn-verify" data-id="<?= $dtovalue->idtime_off ?>" data-reason="<?= $dtovalue->reason ?>" data-date="<?= $dtovalue->date ?>" data-bs-toggle="modal" data-bs-target="#modalVerify">
                                             Edit Verifikasi
                                         </button>

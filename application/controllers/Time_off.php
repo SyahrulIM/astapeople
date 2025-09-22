@@ -16,7 +16,7 @@ class Time_off extends CI_Controller
 
     public function index()
     {
-        if ($this->session->userdata('idrole') == 1) {
+        if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 6) {
             $data_time_off = $this->db
                 ->select('user.full_name as full_name,
                       ppl_time_off.date as date,
@@ -25,6 +25,7 @@ class Time_off extends CI_Controller
                       ppl_time_off.idppl_time_off as idtime_off
                       ')
                 ->join('user', 'user.iduser = ppl_time_off.iduser')
+                ->order_by('date', 'DESC')
                 ->get('ppl_time_off')->result();
         } else {
             $data_time_off = $this->db
