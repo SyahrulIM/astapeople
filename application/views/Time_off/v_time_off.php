@@ -105,7 +105,7 @@
                                     </div>
                                     <div class="mb-3">
                                         <label for="edit_dateRequest" class="form-label">Date Request</label>
-                                        <input type="date" class="form-control" id="edit_dateRequest" name="dateRequest" required>
+                                        <input type="date" class="form-control" id="edit_dateRequest" name="dateRequest" min="<?= date('Y-m-d') ?>" required>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
