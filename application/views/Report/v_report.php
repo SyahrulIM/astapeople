@@ -21,19 +21,19 @@
                     <input type="date" id="absensi_end" name="absensi_end" class="form-control" value="<?= $this->input->get('absensi_end') ?>" required>
                 </div>
                 <?php if ($this->session->userdata('idrole') == 1) : ?>
-                    <div class="col-md-3">
-                        <label for="employee" class="form-label">Employee</label>
-                        <select name="employee" id="employee" class="form-select">
-                            <option value="">-- Select Employee --</option>
-                            <?php if (!empty($employee)) : ?>
-                                <?php foreach ($employee as $emp) : ?>
-                                    <option value="<?= $emp->idppl_employee ?>" <?= ($this->input->get('employee') == $emp->idppl_employee) ? 'selected' : '' ?>>
-                                        <?= $emp->name ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </select>
-                    </div>
+                <div class="col-md-3">
+                    <label for="employee" class="form-label">Employee</label>
+                    <select name="employee" id="employee" class="form-select">
+                        <option value="">-- Select Employee --</option>
+                        <?php if (!empty($employee)) : ?>
+                        <?php foreach ($employee as $emp) : ?>
+                        <option value="<?= $emp->idppl_employee ?>" <?= ($this->input->get('employee') == $emp->idppl_employee) ? 'selected' : '' ?>>
+                            <?= $emp->name ?>
+                        </option>
+                        <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
                 <?php endif; ?>
                 <div class="col-md-3 d-flex align-items-end">
                     <div>
@@ -145,7 +145,9 @@
                         <th>Reason</th>
                         <th>Status</th>
                         <th>Status Edit</th>
+                        <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 6) { ?>
                         <td>Action</td>
+                        <?php } ?>
                     </tr>
                 </thead>
 
@@ -183,62 +185,62 @@
                         if ($isEarlyLeave) {
                             $earlyLeaveMinutes = (strtotime($workEnd) - strtotime($checkOut)) / 60;
                         }
-                    ?>
-                        <tr>
-                            <td><?= $no++ ?></td>
-                            <td><?= $row->name ?></td>
-                            <td><?= $date ?></td>
-                            <td><?= $checkIn ?: '-' ?></td>
-                            <td><?= $checkOut ?: '-' ?></td>
-                            <td><?= $lateMinutes > 0 ? round($lateMinutes) : '-' ?></td>
-                            <td><?= $earlyLeaveMinutes > 0 ? round($earlyLeaveMinutes) : '-' ?></td>
-                            <?php
+                        ?>
+                    <tr>
+                        <td><?= $no++ ?></td>
+                        <td><?= $row->name ?></td>
+                        <td><?= $date ?></td>
+                        <td><?= $checkIn ?: '-' ?></td>
+                        <td><?= $checkOut ?: '-' ?></td>
+                        <td><?= $lateMinutes > 0 ? round($lateMinutes) : '-' ?></td>
+                        <td><?= $earlyLeaveMinutes > 0 ? round($earlyLeaveMinutes) : '-' ?></td>
+                        <?php
                             $isVerify = isset($row->is_verify) ? $row->is_verify : 0;
                             if (empty($reason)) { ?>
-                                <td>-</td>
-                            <?php } elseif ($reason === 'Dinas' && $isVerify === '1') { ?>
-                                <td><span class="badge text-bg-success">Dinas</span></td>
-                            <?php } elseif (($reason === 'Sick' && $isVerify === '1') ||
-                                ($reason === 'Personal' && $isVerify === '1') ||
-                                ($reason === 'Cuti' && $isVerify === '1')
+                        <td>-</td>
+                        <?php } elseif ($reason === 'Dinas' && $isVerify === '1') { ?>
+                        <td><span class="badge text-bg-success">Dinas</span></td>
+                        <?php } elseif (($reason === 'Sick' && $isVerify === '1') || ($reason === 'Personal' && $isVerify === '1') || ($reason === 'Cuti' && $isVerify === '1')
                             ) { ?>
-                                <td><span class="badge text-bg-danger"><?= $reason; ?></span></td>
+                        <td><span class="badge text-bg-danger"><?= $reason; ?></span></td>
+                        <?php } else { ?>
+                        <td>Menunggu Verifikasi</td>
+                        <?php } ?>
+                        <td>
+                            <?php if ($isWeekend) : ?>
+                            <span class="badge bg-danger">Minggu/Libur</span>
+                            <?php elseif ($isNationalHoliday) : ?>
+                            <span class="badge bg-danger">National Holiday</span>
+                            <?php elseif (empty($checkIn) && empty($checkOut)) : ?>
+                            <span class="badge bg-danger">Absent</span>
+                            <?php elseif (empty($checkIn) || empty($checkOut)) : ?>
+                            <span class="badge bg-danger">Incomplete</span>
+                            <?php elseif ($isLate && $isEarlyLeave) : ?>
+                            <span class="badge bg-danger">Late & Early Leave</span>
+                            <?php elseif ($isLate) : ?>
+                            <span class="badge bg-danger">Late</span>
+                            <?php elseif ($isEarlyLeave) : ?>
+                            <span class="badge bg-danger">Early Leave</span>
+                            <?php else : ?>
+                            <span class="badge bg-success">Present</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if ($isEdit == 1) { ?>
+                            <span class="badge bg-warning">Diedit</span>
                             <?php } else { ?>
-                                <td>Menunggu Verifikasi</td>
+                            <span class="badge bg-success">Tidak Diedit</span>
                             <?php } ?>
-                            <td>
-                                <?php if ($isWeekend) : ?>
-                                    <span class="badge bg-danger">Minggu/Libur</span>
-                                <?php elseif ($isNationalHoliday) : ?>
-                                    <span class="badge bg-danger">National Holiday</span>
-                                <?php elseif (empty($checkIn) && empty($checkOut)) : ?>
-                                    <span class="badge bg-danger">Absent</span>
-                                <?php elseif (empty($checkIn) || empty($checkOut)) : ?>
-                                    <span class="badge bg-danger">Incomplete</span>
-                                <?php elseif ($isLate && $isEarlyLeave) : ?>
-                                    <span class="badge bg-danger">Late & Early Leave</span>
-                                <?php elseif ($isLate) : ?>
-                                    <span class="badge bg-danger">Late</span>
-                                <?php elseif ($isEarlyLeave) : ?>
-                                    <span class="badge bg-danger">Early Leave</span>
-                                <?php else : ?>
-                                    <span class="badge bg-success">Present</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if ($isEdit == 1){?>
-                                    <span class="badge bg-warning">Diedit</span>
-                                <?php } else { ?>
-                                    <span class="badge bg-success">Tidak Diedit</span>
-                                <?php } ?>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-warning btn-edit" data-employee-id="<?= $row->idppl_employee ?>" data-date="<?= $date ?>" data-reason="<?= $reason ?>">
-                                    Edit Absensi
-                                </button>
-                            </td>
-                            </td>
-                        </tr>
+                        </td>
+                        <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 6) { ?>
+                        <td>
+                            <button type="button" class="btn btn-warning btn-edit" data-employee-id="<?= $row->idppl_employee ?>" data-date="<?= $date ?>" data-reason="<?= $reason ?>">
+                                Edit Absensi
+                            </button>
+                        </td>
+                        <?php } ?>
+                        </td>
+                    </tr>
                     <?php } ?>
                 </tbody>
             </table>

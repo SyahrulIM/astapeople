@@ -91,8 +91,9 @@
                                     <?php echo $this->session->userdata('username'); ?>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changeFotoModal">Change Foto</a>
                                     <a class="dropdown-item" href="<?php echo base_url('auth/logout'); ?>">Log Out</a>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changeFotoModal">Change Foto</a> </div>
+                                </div>
                             </li>
                         </ul>
                     </div>

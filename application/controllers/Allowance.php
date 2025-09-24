@@ -35,7 +35,7 @@ class Allowance extends CI_Controller
             $sql = "
         SELECT 
             e.idppl_employee, e.name, d.date, d.check_in, d.check_out, d.reason,
-            d.is_edit,                                      -- tambahin ini
+            d.is_edit,
             t.reason AS timeoff_reason, t.is_verify
         FROM ppl_employee e
         LEFT JOIN ppl_presence_detail d ON e.idppl_employee = d.idppl_employee
@@ -94,9 +94,6 @@ class Allowance extends CI_Controller
                 }
 
                 $grouped[$id]['presence'][$date] = '-';
-
-
-
 
                 if ($row->check_in && $row->check_out) {
                     $check_in_time = strtotime($row->check_in);
