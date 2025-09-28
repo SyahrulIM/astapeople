@@ -14,9 +14,12 @@ class Bank_password extends CI_Controller
 
     public function index()
     {
-        $account = $this->input->get('inputFilterAccount');
-        $category = $this->input->get('inputFilterCategory');
+        $filter_account = $this->input->get('inputFilterAccount');
+        $filter_category = $this->input->get('inputFilterCategory');
+        $filter_email = $this->input->get('inputFilterEmail');
+        $filter_verification = $this->input->get('inputFilterVerification');
 
+        // Start Data Bank Password
         $this->db->select('bp.*, 
         GROUP_CONCAT(u.full_name SEPARATOR ", ") as pic_names,
         GROUP_CONCAT(pic.iduser) as pic_ids');
@@ -24,19 +27,69 @@ class Bank_password extends CI_Controller
         $this->db->join('ppl_pic_bank_password pic', 'bp.idppl_bank_password = pic.idppl_bank_password', 'left');
         $this->db->join('user u', 'pic.iduser = u.iduser', 'left');
         $this->db->where('bp.status', 1);
-        if ($account) {
-            $this->db->where('bp.account', $account);
+        if ($filter_account) {
+            $this->db->where('bp.account', $filter_account);
         }
-        if ($category) {
-            $this->db->where('bp.category', $category);
+        if ($filter_category) {
+            $this->db->where('bp.category', $filter_category);
+        }
+        if ($filter_email) {
+            $this->db->where('bp.email', $filter_email);
+        }
+        if ($filter_verification) {
+            $this->db->where('bp.verification', $filter_verification);
         }
         $this->db->group_by('bp.idppl_bank_password');
-
         $query = $this->db->get();
+        // End
+
+        // Start Account
+        $this->db->distinct();
+        $this->db->select('account');
+        $this->db->where('account IS NOT NULL');
+        $this->db->where('status', '1');
+        $this->db->order_by('account ASC');
+        $account = $this->db->get('ppl_bank_password');
+        // End
+
+        // Start Category
+        $this->db->distinct();
+        $this->db->select('category');
+        $this->db->where('category IS NOT NULL');
+        $this->db->where('status', '1');
+        $this->db->order_by('category ASC');
+        $category = $this->db->get('ppl_bank_password');
+        // End
+
+        // Start Email
+        $this->db->distinct();
+        $this->db->select('email');
+        $this->db->where('email IS NOT NULL');
+        $this->db->where('status', '1');
+        $this->db->order_by('email ASC');
+        $email = $this->db->get('ppl_bank_password');
+        // End
+
+        // Start Verification
+        $this->db->distinct();
+        $this->db->select('verification');
+        $this->db->where('verification IS NOT NULL');
+        $this->db->where('status', '1');
+        $this->db->order_by('verification ASC');
+        $verification = $this->db->get('ppl_bank_password');
+        // End
+
+        // echo '<pre>';
+        // print_r($account->result());
+        // die;
 
         $data = [
             'title' => 'Bank Password',
             'data_bp' => $query->result(),
+            'account' => $account->result(),
+            'category' => $category->result(),
+            'email' => $email->result(),
+            'verification' => $verification->result(),
             'users' => $this->db->get('user')->result()
         ];
 

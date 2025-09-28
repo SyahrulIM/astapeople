@@ -18,148 +18,54 @@
                         <option value="" <?php if ($this->input->get('inputFilterAccount') === '') {
                                                 echo 'selected';
                                             } ?>>Semua</option>
-                        <option value="gmail" <?php if ($this->input->get('inputFilterAccount') === 'gmail') {
-                                                    echo 'selected';
-                                                } ?>>Gmail</option>
-                        <option value="tokopedia" <?php if ($this->input->get('inputFilterAccount') === 'tokopedia') {
-                                                        echo 'selected';
-                                                    } ?>>Tokopedia</option>
-                        <option value="shopee" <?php if ($this->input->get('inputFilterAccount') === 'shopee') {
-                                                    echo 'selected';
-                                                } ?>>Shopee</option>
-                        <option value="tiktok" <?php if ($this->input->get('inputFilterAccount') === 'tiktok') {
-                                                    echo 'selected';
-                                                } ?>>Tiktok</option>
-                        <option value="lazada" <?php if ($this->input->get('inputFilterAccount') === 'lazada') {
-                                                    echo 'selected';
-                                                } ?>>Lazada</option>
-                        <option value="forstock" <?php if ($this->input->get('inputFilterAccount') === 'forstock') {
-                                                        echo 'selected';
-                                                    } ?>>Forstock</option>
-                        <option value="facebook" <?php if ($this->input->get('inputFilterAccount') === 'facebook') {
-                                                        echo 'selected';
-                                                    } ?>>Facebook</option>
-                        <option value="instagram" <?php if ($this->input->get('inputFilterAccount') === 'instagram') {
-                                                        echo 'selected';
-                                                    } ?>>Instagram</option>
-                        <option value="desty" <?php if ($this->input->get('inputFilterAccount') === 'desty') {
-                                                    echo 'selected';
-                                                } ?>>Desty</option>
-                        <option value="zalora" <?php if ($this->input->get('inputFilterAccount') === 'zalora') {
-                                                    echo 'selected';
-                                                } ?>>Zalora</option>
-                        <option value="blibli" <?php if ($this->input->get('inputFilterAccount') === 'blibli') {
-                                                    echo 'selected';
-                                                } ?>>Blibli</option>
-                        <option value="kotime" <?php if ($this->input->get('inputFilterAccount') === 'kotime') {
-                                                    echo 'selected';
-                                                } ?>>Kotime</option>
-                        <option value="jagoan hosting" <?php if ($this->input->get('inputFilterAccount') === 'jagoan hosting') {
-                                                            echo 'selected';
-                                                        } ?>>Jagoan Hosting</option>
-                        <option value="email" <?php if ($this->input->get('inputFilterAccount') === 'email') {
-                                                    echo 'selected';
-                                                } ?>>Email</option>
-                        <option value="fast" <?php if ($this->input->get('inputFilterAccount') === 'fast') {
-                                                    echo 'selected';
-                                                } ?>>Fast</option>
-                        <option value="dropbox" <?php if ($this->input->get('inputFilterAccount') === 'dropbox') {
-                                                    echo 'selected';
-                                                } ?>>Dropbox</option>
-                        <option value="compro" <?php if ($this->input->get('inputFilterAccount') === 'compro') {
-                                                    echo 'selected';
-                                                } ?>>Compro</option>
-                        <option value="website" <?php if ($this->input->get('inputFilterAccount') === 'website') {
-                                                    echo 'selected';
-                                                } ?>>Website</option>
-                        <option value="lynk" <?php if ($this->input->get('inputFilterAccount') === 'lynk') {
-                                                    echo 'selected';
-                                                } ?>>Lynk</option>
-                        <option value="linktree" <?php if ($this->input->get('inputFilterAccount') === 'linktree') {
-                                                        echo 'selected';
-                                                    } ?>>Linktree</option>
-                        <option value="apple" <?php if ($this->input->get('inputFilterAccount') === 'apple') {
-                                                    echo 'selected';
-                                                } ?>>Apple</option>
-                        <option value="canva" <?php if ($this->input->get('inputFilterAccount') === 'canva') {
-                                                    echo 'selected';
-                                                } ?>>Canva</option>
-                        <option value="pinterest" <?php if ($this->input->get('inputFilterAccount') === 'pinterest') {
-                                                        echo 'selected';
-                                                    } ?>>Pinterest</option>
-                        <option value="google" <?php if ($this->input->get('inputFilterAccount') === 'google') {
-                                                    echo 'selected';
-                                                } ?>>Google</option>
-                        <option value="ginee" <?php if ($this->input->get('inputFilterAccount') === 'ginee') {
-                                                    echo 'selected';
-                                                } ?>>Ginee</option>
-                        <option value="tiktokshop kotime" <?php if ($this->input->get('inputFilterAccount') === 'tiktokshop kotime') {
-                                                                echo 'selected';
-                                                            } ?>>Tiktokshop Kotime</option>
-                        <option value="rumahweb" <?php if ($this->input->get('inputFilterAccount') === 'rumahweb') {
-                                                        echo 'selected';
-                                                    } ?>>Rumahweb</option>
-                        <option value="github" <?php if ($this->input->get('inputFilterAccount') === 'github') {
-                                                    echo 'selected';
-                                                } ?>>Github</option>
-                        <option value="git pat" <?php if ($this->input->get('inputFilterAccount') === 'git pat') {
-                                                    echo 'selected';
-                                                } ?>>Git Pat</option>
-                        <option value="ssh-access cpanel" <?php if ($this->input->get('inputFilterAccount') === 'ssh-access cpanel') {
-                                                                echo 'selected';
-                                                            } ?>>SSH Access Cpanel</option>
-                        <option value="tiktok kotime" <?php if ($this->input->get('inputFilterAccount') === 'tiktok kotime') {
-                                                            echo 'selected';
-                                                        } ?>>Tiktok Kotime</option>
-                        <option value="gopay" <?php if ($this->input->get('inputFilterAccount') === 'gopay') {
-                                                    echo 'selected';
-                                                } ?>>Gopay</option>
-                        <option value="tokopedia kotime" <?php if ($this->input->get('inputFilterAccount') === 'tokopedia kotime') {
-                                                                echo 'selected';
-                                                            } ?>>Tokopedia Kotime</option>
-                        <option value="shopee kotime" <?php if ($this->input->get('inputFilterAccount') === 'shopee kotime') {
-                                                            echo 'selected';
-                                                        } ?>>Shopee Kotime</option>
-                        <option value="mitra asta tokopedia" <?php if ($this->input->get('inputFilterAccount') === 'mitra asta tokopedia') {
-                                                                    echo 'selected';
-                                                                } ?>>Mitra Asta Tokopedia</option>
-                        <option value="evermos" <?php if ($this->input->get('inputFilterAccount') === 'evermos') {
-                                                    echo 'selected';
-                                                } ?>>Evermos</option>
-                        <option value="forstok" <?php if ($this->input->get('inputFilterAccount') === 'forstok') {
-                                                    echo 'selected';
-                                                } ?>>Forstok</option>
-                        <option value="dana" <?php if ($this->input->get('inputFilterAccount') === 'dana') {
-                                                    echo 'selected';
-                                                } ?>>Dana</option>
-                        <option value="microsoft" <?php if ($this->input->get('inputFilterAccount') === 'microsoft') {
-                                                        echo 'selected';
-                                                    } ?>>Microsoft</option>
-                        <option value="olx" <?php if ($this->input->get('inputFilterAccount') === 'olx') {
+                        <?php foreach ($account as $key => $value) { ?>
+                        <option value="<?php echo $value->account; ?>" <?php if ($this->input->get('inputFilterAccount') === $value->account) {
+                                                                                echo 'selected';
+                                                                            } ?>>
+                            <?php echo strtoupper($value->account); ?>
+                        </option>
+                        <?php } ?>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="inputFilterEmail" class="form-label">Email</label>
+                    <select id="inputFilterEmail" name="inputFilterEmail" class="form-select">
+                        <option value="" <?php if ($this->input->get('inputFilterEmail') === '') {
                                                 echo 'selected';
-                                            } ?>>OLX</option>
-                        <option value="xendit" <?php if ($this->input->get('inputFilterAccount') === 'xendit') {
-                                                    echo 'selected';
-                                                } ?>>Xendit</option>
-                        <option value="brevo" <?php if ($this->input->get('inputFilterAccount') === 'brevo') {
-                                                    echo 'selected';
-                                                } ?>>Brevo</option>
-                        <option value="cctv d9" <?php if ($this->input->get('inputFilterAccount') === 'cctv d9') {
-                                                    echo 'selected';
-                                                } ?>>CCTV D9</option>
-                        <option value="cctv d17" <?php if ($this->input->get('inputFilterAccount') === 'cctv d17') {
-                                                        echo 'selected';
-                                                    } ?>>CCTV D17</option>
+                                            } ?>>Semua</option>
+                        <?php foreach ($email as $key => $value) { ?>
+                        <option value="<?php echo $value->email; ?>" <?php if ($this->input->get('inputFilterEmail') === $value->email) {
+                                                                                echo 'selected';
+                                                                            } ?>>
+                            <?php echo strtoupper($value->email); ?>
+                        </option>
+                        <?php } ?>
                     </select>
                 </div>
                 <div class="col-md-3">
                     <label for="inputFilterCategory" class="form-label">Category</label>
                     <select id="inputFilterCategory" name="inputFilterCategory" class="form-select">
                         <option value="" <?= $this->input->get('inputFilterCategory') === '' ? 'selected' : '' ?>>Semua</option>
-                        <option value="other" <?= $this->input->get('inputFilterCategory') == 'other' ? 'selected' : '' ?>>Other</option>
-                        <option value="kotime" <?= $this->input->get('inputFilterCategory') == 'kotime' ? 'selected' : '' ?>>Kotime</option>
-                        <option value="marketplace" <?= $this->input->get('inputFilterCategory') == 'marketplace' ? 'selected' : '' ?>>Marketplace</option>
-                        <option value="evermos" <?= $this->input->get('inputFilterCategory') == 'evermos' ? 'selected' : '' ?>>Evermos</option>
+                        <?php foreach ($category as $key => $value) { ?>
+                        <option value="<?php echo $value->category; ?>" <?php if ($this->input->get('inputFilterCategory') === $value->category) {
+                                                                                echo 'selected';
+                                                                            } ?>>
+                            <?php echo strtoupper($value->category); ?>
+                        </option>
+                        <?php } ?>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="inputFilterVerification" class="form-label">Verification</label>
+                    <select id="inputFilterVerification" name="inputFilterVerification" class="form-select">
+                        <option value="" <?= $this->input->get('inputFilterVerification') === '' ? 'selected' : '' ?>>Semua</option>
+                        <?php foreach ($verification as $key => $value) { ?>
+                        <option value="<?php echo $value->verification; ?>" <?php if ($this->input->get('inputFilterVerification') === $value->verification) {
+                                                                                    echo 'selected';
+                                                                                } ?>>
+                            <?php echo strtoupper($value->verification); ?>
+                        </option>
+                        <?php } ?>
                     </select>
                 </div>
                 <div class="col-md-3 d-flex align-items-end">
