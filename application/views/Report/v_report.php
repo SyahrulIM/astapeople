@@ -20,7 +20,7 @@
                     <label for="absensi_end" class="form-label">Attendance Date (End)</label>
                     <input type="date" id="absensi_end" name="absensi_end" class="form-control" value="<?= $this->input->get('absensi_end') ?>" required>
                 </div>
-                <?php if ($this->session->userdata('idrole') == 1) : ?>
+                <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 6) : ?>
                 <div class="col-md-3">
                     <label for="employee" class="form-label">Employee</label>
                     <select name="employee" id="employee" class="form-select">

@@ -20,31 +20,32 @@ class Allowance extends CI_Controller
     public function index()
     {
         $start = $this->input->get('absensi_start');
-        $end = $this->input->get('absensi_end');
+        $end   = $this->input->get('absensi_end');
         $idrole = $this->session->userdata('idrole');
         $iduser = $this->session->userdata('iduser');
 
         $data = [
-            'title' => 'Allowance',
-            'start' => $start,
-            'end' => $end,
+            'title'   => 'Allowance',
+            'start'   => $start,
+            'end'     => $end,
             'results' => []
         ];
 
         if ($start && $end) {
             $sql = "
-        SELECT 
-            e.idppl_employee, e.name, d.date, d.check_in, d.check_out, d.reason,
-            d.is_edit,
-            t.reason AS timeoff_reason, t.is_verify
-        FROM ppl_employee e
-        LEFT JOIN ppl_presence_detail d ON e.idppl_employee = d.idppl_employee
-        LEFT JOIN ppl_time_off t ON e.iduser = t.iduser AND d.date = t.date
-        WHERE d.date BETWEEN ? AND ?
+            SELECT 
+                e.idppl_employee, e.name, d.date, d.check_in, d.check_out, d.reason,
+                d.is_edit,
+                t.reason AS timeoff_reason, t.is_verify
+            FROM ppl_employee e
+            LEFT JOIN ppl_presence_detail d ON e.idppl_employee = d.idppl_employee
+            LEFT JOIN ppl_time_off t ON e.iduser = t.iduser AND d.date = t.date
+            WHERE d.date BETWEEN ? AND ?
         ";
 
             $params = [$start, $end];
 
+            // filter user selain role admin
             if ($idrole != 1) {
                 $sql .= " AND e.iduser = ? ";
                 $params[] = $iduser;
@@ -57,68 +58,51 @@ class Allowance extends CI_Controller
 
             $grouped = [];
 
-
-
-
             foreach ($rows as $row) {
-                $id = $row->idppl_employee;
+                $id   = $row->idppl_employee;
                 $date = $row->date;
 
                 if (!isset($grouped[$id])) {
                     $grouped[$id] = [
-                        'name' => $row->name,
-                        'presence' => [],
-                        'total_attend' => 0
+                        'name'          => $row->name,
+                        'presence'      => [],
+                        'total_attend'  => 0,
+                        'total_meal'    => 0
                     ];
-                }
-
-                $got_meal = false;
-
-                if ($row->check_in && $row->check_out) {
-                    $check_in_time = strtotime($row->check_in);
-                    $check_out_time = strtotime($row->check_out);
-
-                    $late_limit = strtotime('08:15:00');
-                    $early_limit = strtotime('17:00:00');
-
-
-
-
-
-
-                    if ($check_in_time <= $late_limit && $check_out_time >= $early_limit) {
-                        $got_meal = true;
-                    }
-                } elseif (strtolower($row->timeoff_reason ?? '') === 'dinas' && $row->is_verify == 1) {
-                    $got_meal = true;
                 }
 
                 $grouped[$id]['presence'][$date] = '-';
 
+                // --- Kasus: hadir absen ---
                 if ($row->check_in && $row->check_out) {
-                    $check_in_time = strtotime($row->check_in);
+                    $check_in_time  = strtotime($row->check_in);
                     $check_out_time = strtotime($row->check_out);
 
-                    $late_limit  = strtotime('08:15:00');
-                    $early_limit = strtotime('17:00:00');
+                    $late_limit  = strtotime('08:10:00');
+                    $early_limit = strtotime('16:30:00');
 
+                    // tidak telat & tidak pulang cepat
                     if ($check_in_time <= $late_limit && $check_out_time >= $early_limit) {
                         $check_symbol = '<span class="text-success fw-bold">✓</span>';
-
 
                         if (!empty($row->is_edit) && $row->is_edit == 1) {
                             $check_symbol = '<span class="text-danger fw-bold">✓</span>';
                         }
 
                         $grouped[$id]['presence'][$date] = $check_symbol;
+
+                        // Hadir valid
                         $grouped[$id]['total_attend']++;
+
+                        // Meal allowance
+                        $grouped[$id]['total_meal']++;
                     }
-                } elseif (strtolower($row->timeoff_reason ?? '') === 'dinas' && $row->is_verify == 1) {
-                    $grouped[$id]['presence'][$date] = '<span class="text-success fw-bold">✓</span>';
+                }
+                // --- Kasus: dinas disetujui ---
+                elseif (strtolower($row->timeoff_reason ?? '') === 'dinas' && $row->is_verify == 1) {
+                    $grouped[$id]['presence'][$date] = '<span class="text-primary fw-bold">C</span>';
                     $grouped[$id]['total_attend']++;
                 }
-
-                if ($got_meal) $grouped[$id]['total_attend']++;
             }
 
             $data['results'] = $grouped;
