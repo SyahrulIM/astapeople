@@ -33,20 +33,20 @@ class Allowance extends CI_Controller
 
         if ($start && $end) {
             $sql = "
-            SELECT 
-                e.idppl_employee, e.name, d.date, d.check_in, d.check_out, d.reason,
-                d.is_edit,
-                t.reason AS timeoff_reason, t.is_verify
-            FROM ppl_employee e
-            LEFT JOIN ppl_presence_detail d ON e.idppl_employee = d.idppl_employee
-            LEFT JOIN ppl_time_off t ON e.iduser = t.iduser AND d.date = t.date
-            WHERE d.date BETWEEN ? AND ?
-        ";
+        SELECT 
+            e.idppl_employee, e.name, d.date, d.check_in, d.check_out, d.reason,
+            d.is_edit,
+            t.reason AS timeoff_reason, t.is_verify
+        FROM ppl_employee e
+        LEFT JOIN ppl_presence_detail d ON e.idppl_employee = d.idppl_employee
+        LEFT JOIN ppl_time_off t ON e.iduser = t.iduser AND d.date = t.date
+        WHERE d.date BETWEEN ? AND ?
+    ";
 
             $params = [$start, $end];
 
             // filter user selain role admin
-            if ($idrole != 1) {
+            if ($idrole != 1 || $idrole != 6) {
                 $sql .= " AND e.iduser = ? ";
                 $params[] = $iduser;
             }
@@ -57,6 +57,7 @@ class Allowance extends CI_Controller
             $rows = $query->result();
 
             $grouped = [];
+            $daily_status = []; // track unik per hari
 
             foreach ($rows as $row) {
                 $id   = $row->idppl_employee;
@@ -71,6 +72,11 @@ class Allowance extends CI_Controller
                     ];
                 }
 
+                // skip kalau sudah dihitung untuk hari ini
+                if (isset($daily_status[$id][$date])) {
+                    continue;
+                }
+
                 $grouped[$id]['presence'][$date] = '-';
 
                 // --- Kasus: hadir absen ---
@@ -78,8 +84,16 @@ class Allowance extends CI_Controller
                     $check_in_time  = strtotime($row->check_in);
                     $check_out_time = strtotime($row->check_out);
 
-                    $late_limit  = strtotime('08:10:00');
-                    $early_limit = strtotime('16:30:00');
+                    $day_of_week = date('N', strtotime($date));
+                    if ($day_of_week == 6) {
+                        // Sabtu
+                        $late_limit  = strtotime('08:10:00');
+                        $early_limit = strtotime('13:00:00');
+                    } else {
+                        // Senin - Jumat
+                        $late_limit  = strtotime('08:10:00');
+                        $early_limit = strtotime('16:30:00');
+                    }
 
                     // tidak telat & tidak pulang cepat
                     if ($check_in_time <= $late_limit && $check_out_time >= $early_limit) {
@@ -93,15 +107,17 @@ class Allowance extends CI_Controller
 
                         // Hadir valid
                         $grouped[$id]['total_attend']++;
-
-                        // Meal allowance
                         $grouped[$id]['total_meal']++;
+
+                        $daily_status[$id][$date] = true;
                     }
                 }
                 // --- Kasus: dinas disetujui ---
                 elseif (strtolower($row->timeoff_reason ?? '') === 'dinas' && $row->is_verify == 1) {
                     $grouped[$id]['presence'][$date] = '<span class="text-primary fw-bold">C</span>';
                     $grouped[$id]['total_attend']++;
+
+                    $daily_status[$id][$date] = true;
                 }
             }
 
