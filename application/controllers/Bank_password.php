@@ -46,7 +46,8 @@ class Bank_password extends CI_Controller
         // Start Account
         $this->db->distinct();
         $this->db->select('account');
-        $this->db->where('account IS NOT NULL');
+        $this->db->where('account IS NOT NULL', null, false);
+        $this->db->where('account !=', '');
         $this->db->where('status', '1');
         $this->db->order_by('account ASC');
         $account = $this->db->get('ppl_bank_password');
@@ -55,7 +56,8 @@ class Bank_password extends CI_Controller
         // Start Account Filter
         $this->db->distinct();
         $this->db->select('account');
-        $this->db->where('account IS NOT NULL');
+        $this->db->where('account IS NOT NULL', null, false);
+        $this->db->where('account !=', '');
         $this->db->where('status', '1');
         if ($filter_email) {
             $this->db->where('email', $filter_email);
@@ -67,7 +69,8 @@ class Bank_password extends CI_Controller
         // Start Category
         $this->db->distinct();
         $this->db->select('category');
-        $this->db->where('category IS NOT NULL');
+        $this->db->where('category IS NOT NULL', null, false);
+        $this->db->where('category !=', '');
         $this->db->where('status', '1');
         $this->db->order_by('category ASC');
         $category = $this->db->get('ppl_bank_password');
@@ -76,7 +79,8 @@ class Bank_password extends CI_Controller
         // Start Email
         $this->db->distinct();
         $this->db->select('email');
-        $this->db->where('email IS NOT NULL');
+        $this->db->where('email IS NOT NULL', null, false);
+        $this->db->where('email !=', '');
         $this->db->where('status', '1');
         $this->db->order_by('email ASC');
         $email = $this->db->get('ppl_bank_password');
@@ -86,7 +90,8 @@ class Bank_password extends CI_Controller
         // Start Verification
         $this->db->distinct();
         $this->db->select('verification');
-        $this->db->where('verification IS NOT NULL');
+        $this->db->where('verification IS NOT NULL', null, false);
+        $this->db->where('verification !=', '');
         $this->db->where('status', '1');
         $this->db->order_by('verification ASC');
         $verification = $this->db->get('ppl_bank_password');
@@ -95,8 +100,8 @@ class Bank_password extends CI_Controller
         // Start Email Filter
         $this->db->distinct();
         $this->db->select('email');
-        $this->db->where('email IS NOT NULL');
-        $this->db->where('status', '1');
+        $this->db->where('email IS NOT NULL', null, false);
+        $this->db->where('email !=', '');
         $this->db->where('status', '1');
         if ($filter_account) {
             $this->db->where('account', $filter_account);
@@ -108,7 +113,8 @@ class Bank_password extends CI_Controller
         // Start Verification Filter
         $this->db->distinct();
         $this->db->select('verification');
-        $this->db->where('verification IS NOT NULL');
+        $this->db->where('verification IS NOT NULL', null, false);
+        $this->db->where('verification !=', '');
         $this->db->where('status', '1');
         if ($filter_account) {
             $this->db->where('account', $filter_account);
@@ -126,7 +132,8 @@ class Bank_password extends CI_Controller
         $this->db->from('ppl_pic_bank_password pic');
         $this->db->join('user u', 'pic.iduser = u.iduser', 'left');
         $this->db->join('ppl_bank_password bp', 'bp.idppl_bank_password = pic.idppl_bank_password', 'left');
-        $this->db->where('u.full_name IS NOT NULL');
+        $this->db->where('u.full_name IS NOT NULL', null, false);
+        $this->db->where('u.full_name !=', '');
         $this->db->where('bp.status', 1);
         if ($filter_email) {
             $this->db->where('bp.email', $filter_email);
@@ -138,12 +145,13 @@ class Bank_password extends CI_Controller
         $pic_filter = $this->db->get();
         // End
 
-        // Hitung berapa filter aktif
+        // Start hitung berapa filter aktif
         $active_filters = 0;
         if ($filter_account) $active_filters++;
         if ($filter_category) $active_filters++;
         if ($filter_email) $active_filters++;
         if ($filter_verification) $active_filters++;
+        // End
 
         // echo '<pre>';
         // print_r($account->result());

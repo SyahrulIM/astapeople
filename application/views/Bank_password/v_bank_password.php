@@ -374,9 +374,11 @@
             <div class="row">
                 <div class="col-6"></div>
                 <div class="col-6">
-                    <span class="badge text-bg-primary fs-6 mt-2 d-inline-block">
-                        <?php echo $keys->email; ?>
-                    </span>
+                    <a href="<?php echo base_url('bank_password?inputFilterEmail=' . $keys->email) ?>">
+                        <span class="badge text-bg-primary fs-6 mt-2 d-inline-block">
+                            <?php echo $keys->email; ?>
+                        </span>
+                    </a>
                 </div>
             </div>
             <?php } ?>
@@ -467,9 +469,11 @@
             <div class="row">
                 <div class="col-6"></div>
                 <div class="col-6">
-                    <span class="badge text-bg-primary fs-6 mt-2 d-inline-block">
-                        <?php echo $keys->account; ?>
-                    </span>
+                    <a href="<?php echo base_url('bank_password?inputFilterAccount=' . $keys->account) ?>">
+                        <span class="badge text-bg-primary fs-6 mt-2 d-inline-block">
+                            <?php echo $keys->account; ?>
+                        </span>
+                    </a>
                 </div>
             </div>
             <?php } ?>
