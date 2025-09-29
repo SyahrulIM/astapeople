@@ -312,6 +312,197 @@
     </div>
     <!-- End Edit Modal -->
 
+    <!-- Start diagram password -->
+    <?php if ($active_filters === 1 && $this->input->get('inputFilterAccount')) { ?>
+    <div class="row">
+        <div class="col"></div>
+        <div class="col-10" style="text-align: center;">
+            <span class="badge text-bg-primary fs-6">
+                <?php echo strtoupper($this->input->get('inputFilterAccount')) ?>
+            </span>
+        </div>
+        <div class="col"></div>
+        <div class="col-12" style="justify-items: center;">
+            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+        </div>
+        <div class="col-12">
+            <div style="border: none;border-top: 5px solid black;width: 68%;justify-self: center;"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col" style="justify-items: center;">
+            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+        </div>
+        <div class="col" style="justify-items: center;">
+            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+        </div>
+        <div class="col" style="justify-items: center;">
+            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col" style="text-align: center;">
+            <span class="badge text-bg-primary fs-6">
+                Email
+            </span>
+        </div>
+        <div class="col" style="text-align: center;">
+            <span class="badge text-bg-primary fs-6">
+                Verification
+            </span>
+        </div>
+        <div class="col" style="text-align: center;">
+            <span class="badge text-bg-primary fs-6">
+                PIC
+            </span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col" style="justify-items: center;">
+            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+        </div>
+        <div class="col" style="justify-items: center;">
+            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+        </div>
+        <div class="col" style="justify-items: center;">
+            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <?php foreach ($email_filter as $keys) { ?>
+            <div class="row">
+                <div class="col-6"></div>
+                <div class="col-6">
+                    <span class="badge text-bg-primary fs-6 mt-2 d-inline-block">
+                        <?php echo $keys->email; ?>
+                    </span>
+                </div>
+            </div>
+            <?php } ?>
+        </div>
+        <div class="col">
+            <?php foreach ($verification_filter as $keys) { ?>
+            <div class="row">
+                <div class="col-6"></div>
+                <div class="col-6">
+                    <span class="badge text-bg-primary fs-6 mt-2 d-inline-block">
+                        <?php echo $keys->verification; ?>
+                    </span>
+                </div>
+            </div>
+            <?php } ?>
+        </div>
+        <div class="col">
+            <?php foreach ($pic_filter as $keys) { ?>
+            <div class="row">
+                <div class="col-6"></div>
+                <div class="col-6">
+                    <span class="badge text-bg-primary fs-6 mt-2 d-inline-block">
+                        <?php echo $keys->full_name; ?>
+                    </span>
+                </div>
+            </div>
+            <?php } ?>
+        </div>
+    </div>
+    <?php } else if ($active_filters === 1 && $this->input->get('inputFilterEmail')) { ?>
+    <div class="row">
+        <div class="col"></div>
+        <div class="col-10" style="text-align: center;">
+            <span class="badge text-bg-primary fs-6">
+                <?php echo strtoupper($this->input->get('inputFilterEmail')) ?>
+            </span>
+        </div>
+        <div class="col"></div>
+        <div class="col-12" style="justify-items: center;">
+            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+        </div>
+        <div class="col-12">
+            <div style="border: none;border-top: 5px solid black;width: 68%;justify-self: center;"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col" style="justify-items: center;">
+            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+        </div>
+        <div class="col" style="justify-items: center;">
+            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+        </div>
+        <div class="col" style="justify-items: center;">
+            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col" style="text-align: center;">
+            <span class="badge text-bg-primary fs-6">
+                Account
+            </span>
+        </div>
+        <div class="col" style="text-align: center;">
+            <span class="badge text-bg-primary fs-6">
+                Verification
+            </span>
+        </div>
+        <div class="col" style="text-align: center;">
+            <span class="badge text-bg-primary fs-6">
+                PIC
+            </span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col" style="justify-items: center;">
+            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+        </div>
+        <div class="col" style="justify-items: center;">
+            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+        </div>
+        <div class="col" style="justify-items: center;">
+            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <?php foreach ($account_filter as $keys) { ?>
+            <div class="row">
+                <div class="col-6"></div>
+                <div class="col-6">
+                    <span class="badge text-bg-primary fs-6 mt-2 d-inline-block">
+                        <?php echo $keys->account; ?>
+                    </span>
+                </div>
+            </div>
+            <?php } ?>
+        </div>
+        <div class="col">
+            <?php foreach ($verification_filter as $keys) { ?>
+            <div class="row">
+                <div class="col-6"></div>
+                <div class="col-6">
+                    <span class="badge text-bg-primary fs-6 mt-2 d-inline-block">
+                        <?php echo $keys->verification; ?>
+                    </span>
+                </div>
+            </div>
+            <?php } ?>
+        </div>
+        <div class="col">
+            <?php foreach ($pic_filter as $keys) { ?>
+            <div class="row">
+                <div class="col-6"></div>
+                <div class="col-6">
+                    <span class="badge text-bg-primary fs-6 mt-2 d-inline-block">
+                        <?php echo $keys->full_name; ?>
+                    </span>
+                </div>
+            </div>
+            <?php } ?>
+        </div>
+    </div>
+    <?php } ?>
+
+    <!-- End -->
+
     <div class="row">
         <div class="col">
             <table id="tableReport" class="display" style="width:100%">

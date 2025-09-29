@@ -52,6 +52,18 @@ class Bank_password extends CI_Controller
         $account = $this->db->get('ppl_bank_password');
         // End
 
+        // Start Account Filter
+        $this->db->distinct();
+        $this->db->select('account');
+        $this->db->where('account IS NOT NULL');
+        $this->db->where('status', '1');
+        if ($filter_email) {
+            $this->db->where('email', $filter_email);
+        }
+        $this->db->order_by('account ASC');
+        $account_filter = $this->db->get('ppl_bank_password');
+        // End
+
         // Start Category
         $this->db->distinct();
         $this->db->select('category');
@@ -70,6 +82,7 @@ class Bank_password extends CI_Controller
         $email = $this->db->get('ppl_bank_password');
         // End
 
+
         // Start Verification
         $this->db->distinct();
         $this->db->select('verification');
@@ -79,6 +92,59 @@ class Bank_password extends CI_Controller
         $verification = $this->db->get('ppl_bank_password');
         // End
 
+        // Start Email Filter
+        $this->db->distinct();
+        $this->db->select('email');
+        $this->db->where('email IS NOT NULL');
+        $this->db->where('status', '1');
+        $this->db->where('status', '1');
+        if ($filter_account) {
+            $this->db->where('account', $filter_account);
+        }
+        $this->db->order_by('email ASC');
+        $email_filter = $this->db->get('ppl_bank_password');
+        // End
+
+        // Start Verification Filter
+        $this->db->distinct();
+        $this->db->select('verification');
+        $this->db->where('verification IS NOT NULL');
+        $this->db->where('status', '1');
+        if ($filter_account) {
+            $this->db->where('account', $filter_account);
+        }
+        if ($filter_email) {
+            $this->db->where('email', $filter_email);
+        }
+        $this->db->order_by('verification ASC');
+        $verification_filter = $this->db->get('ppl_bank_password');
+        // End
+
+        // Start PIC Filter
+        $this->db->distinct();
+        $this->db->select('u.iduser, u.full_name');
+        $this->db->from('ppl_pic_bank_password pic');
+        $this->db->join('user u', 'pic.iduser = u.iduser', 'left');
+        $this->db->join('ppl_bank_password bp', 'bp.idppl_bank_password = pic.idppl_bank_password', 'left');
+        $this->db->where('u.full_name IS NOT NULL');
+        $this->db->where('bp.status', 1);
+        if ($filter_email) {
+            $this->db->where('bp.email', $filter_email);
+        }
+        if ($filter_account) {
+            $this->db->where('bp.account', $filter_account);
+        }
+        $this->db->order_by('u.full_name ASC');
+        $pic_filter = $this->db->get();
+        // End
+
+        // Hitung berapa filter aktif
+        $active_filters = 0;
+        if ($filter_account) $active_filters++;
+        if ($filter_category) $active_filters++;
+        if ($filter_email) $active_filters++;
+        if ($filter_verification) $active_filters++;
+
         // echo '<pre>';
         // print_r($account->result());
         // die;
@@ -87,9 +153,14 @@ class Bank_password extends CI_Controller
             'title' => 'Bank Password',
             'data_bp' => $query->result(),
             'account' => $account->result(),
+            'account_filter' => $account_filter->result(),
             'category' => $category->result(),
             'email' => $email->result(),
+            'email_filter' => $email_filter->result(),
             'verification' => $verification->result(),
+            'verification_filter' => $verification_filter->result(),
+            'pic_filter' => $pic_filter->result(),
+            'active_filters' => $active_filters,
             'users' => $this->db->get('user')->result()
         ];
 
