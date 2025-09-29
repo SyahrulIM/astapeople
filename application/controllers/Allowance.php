@@ -17,22 +17,22 @@ class Allowance extends CI_Controller
         }
     }
 
-    public function index()
-    {
-        $start = $this->input->get('absensi_start');
-        $end   = $this->input->get('absensi_end');
-        $idrole = $this->session->userdata('idrole');
-        $iduser = $this->session->userdata('iduser');
+public function index()
+{
+    $start = $this->input->get('absensi_start');
+    $end   = $this->input->get('absensi_end');
+    $idrole = $this->session->userdata('idrole');
+    $iduser = $this->session->userdata('iduser');
 
-        $data = [
-            'title'   => 'Allowance',
-            'start'   => $start,
-            'end'     => $end,
-            'results' => []
-        ];
+    $data = [
+        'title'   => 'Allowance',
+        'start'   => $start,
+        'end'     => $end,
+        'results' => []
+    ];
 
-        if ($start && $end) {
-            $sql = "
+    if ($start && $end) {
+        $sql = "
         SELECT 
             e.idppl_employee, e.name, d.date, d.check_in, d.check_out, d.reason,
             d.is_edit,
@@ -41,92 +41,92 @@ class Allowance extends CI_Controller
         LEFT JOIN ppl_presence_detail d ON e.idppl_employee = d.idppl_employee
         LEFT JOIN ppl_time_off t ON e.iduser = t.iduser AND d.date = t.date
         WHERE d.date BETWEEN ? AND ?
-    ";
+        ";
 
-            $params = [$start, $end];
+        $params = [$start, $end];
 
-            // filter user selain role admin
-            if ($idrole != 1 || $idrole != 6) {
-                $sql .= " AND e.iduser = ? ";
-                $params[] = $iduser;
+        // hanya filter kalau bukan admin (idrole=1) dan bukan role 6
+        if ($idrole != 1 && $idrole != 6) {
+            $sql .= " AND e.iduser = ? ";
+            $params[] = $iduser;
+        }
+
+        $sql .= " ORDER BY e.name, d.date";
+
+        $query = $this->db->query($sql, $params);
+        $rows = $query->result();
+
+        $grouped = [];
+        $daily_status = []; // track unik per hari
+
+        foreach ($rows as $row) {
+            $id   = $row->idppl_employee;
+            $date = $row->date;
+
+            if (!isset($grouped[$id])) {
+                $grouped[$id] = [
+                    'name'          => $row->name,
+                    'presence'      => [],
+                    'total_attend'  => 0,
+                    'total_meal'    => 0
+                ];
             }
 
-            $sql .= " ORDER BY e.name, d.date";
+            // skip kalau sudah dihitung untuk hari ini
+            if (isset($daily_status[$id][$date])) {
+                continue;
+            }
 
-            $query = $this->db->query($sql, $params);
-            $rows = $query->result();
+            $grouped[$id]['presence'][$date] = '-';
 
-            $grouped = [];
-            $daily_status = []; // track unik per hari
+            // --- Kasus: hadir absen ---
+            if ($row->check_in && $row->check_out) {
+                $check_in_time  = strtotime($row->check_in);
+                $check_out_time = strtotime($row->check_out);
 
-            foreach ($rows as $row) {
-                $id   = $row->idppl_employee;
-                $date = $row->date;
-
-                if (!isset($grouped[$id])) {
-                    $grouped[$id] = [
-                        'name'          => $row->name,
-                        'presence'      => [],
-                        'total_attend'  => 0,
-                        'total_meal'    => 0
-                    ];
+                $day_of_week = date('N', strtotime($date));
+                if ($day_of_week == 6) {
+                    // Sabtu
+                    $late_limit  = strtotime('08:10:00');
+                    $early_limit = strtotime('13:00:00');
+                } else {
+                    // Senin - Jumat
+                    $late_limit  = strtotime('08:10:00');
+                    $early_limit = strtotime('16:30:00');
                 }
 
-                // skip kalau sudah dihitung untuk hari ini
-                if (isset($daily_status[$id][$date])) {
-                    continue;
-                }
+                // tidak telat & tidak pulang cepat
+                if ($check_in_time <= $late_limit && $check_out_time >= $early_limit) {
+                    $check_symbol = '<span class="text-success fw-bold">✓</span>';
 
-                $grouped[$id]['presence'][$date] = '-';
-
-                // --- Kasus: hadir absen ---
-                if ($row->check_in && $row->check_out) {
-                    $check_in_time  = strtotime($row->check_in);
-                    $check_out_time = strtotime($row->check_out);
-
-                    $day_of_week = date('N', strtotime($date));
-                    if ($day_of_week == 6) {
-                        // Sabtu
-                        $late_limit  = strtotime('08:10:00');
-                        $early_limit = strtotime('13:00:00');
-                    } else {
-                        // Senin - Jumat
-                        $late_limit  = strtotime('08:10:00');
-                        $early_limit = strtotime('16:30:00');
+                    if (!empty($row->is_edit) && $row->is_edit == 1) {
+                        $check_symbol = '<span class="text-danger fw-bold">✓</span>';
                     }
 
-                    // tidak telat & tidak pulang cepat
-                    if ($check_in_time <= $late_limit && $check_out_time >= $early_limit) {
-                        $check_symbol = '<span class="text-success fw-bold">✓</span>';
+                    $grouped[$id]['presence'][$date] = $check_symbol;
 
-                        if (!empty($row->is_edit) && $row->is_edit == 1) {
-                            $check_symbol = '<span class="text-danger fw-bold">✓</span>';
-                        }
-
-                        $grouped[$id]['presence'][$date] = $check_symbol;
-
-                        // Hadir valid
-                        $grouped[$id]['total_attend']++;
-                        $grouped[$id]['total_meal']++;
-
-                        $daily_status[$id][$date] = true;
-                    }
-                }
-                // --- Kasus: dinas disetujui ---
-                elseif (strtolower($row->timeoff_reason ?? '') === 'dinas' && $row->is_verify == 1) {
-                    $grouped[$id]['presence'][$date] = '<span class="text-primary fw-bold">C</span>';
+                    // Hadir valid
                     $grouped[$id]['total_attend']++;
+                    $grouped[$id]['total_meal']++;
 
                     $daily_status[$id][$date] = true;
                 }
             }
+            // --- Kasus: dinas disetujui ---
+            elseif (strtolower($row->timeoff_reason ?? '') === 'dinas' && $row->is_verify == 1) {
+                $grouped[$id]['presence'][$date] = '<span class="text-primary fw-bold">C</span>';
+                $grouped[$id]['total_attend']++;
 
-            $data['results'] = $grouped;
+                $daily_status[$id][$date] = true;
+            }
         }
 
-        $this->load->view('theme/v_head', $data);
-        $this->load->view('Allowance/v_allowance', $data);
+        $data['results'] = $grouped;
     }
+
+    $this->load->view('theme/v_head', $data);
+    $this->load->view('Allowance/v_allowance', $data);
+}
 
     public function exportExcel()
     {
