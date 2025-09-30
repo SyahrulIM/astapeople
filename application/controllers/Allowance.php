@@ -3,6 +3,8 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class Allowance extends CI_Controller
 {
@@ -135,11 +137,10 @@ class Allowance extends CI_Controller
             show_error('Tanggal tidak boleh kosong');
         }
 
-        // ambil data hasil grouping
+        // Ambil data absensi + time off
         $sql = "
         SELECT 
-            e.idppl_employee, e.name, d.date, d.check_in, d.check_out, d.reason,
-            d.is_edit,
+            e.idppl_employee, e.name, d.date, d.check_in, d.check_out,
             t.reason AS timeoff_reason, t.is_verify
         FROM ppl_employee e
         LEFT JOIN ppl_presence_detail d ON e.idppl_employee = d.idppl_employee
@@ -147,63 +148,42 @@ class Allowance extends CI_Controller
         WHERE d.date BETWEEN ? AND ?
         ORDER BY e.name, d.date
     ";
+        $rows = $this->db->query($sql, [$start, $end])->result();
 
-        $query = $this->db->query($sql, [$start, $end]);
-        $rows  = $query->result();
-
-        // grouping
+        // Grouping per karyawan
         $grouped = [];
-        $daily_status = [];
-
         foreach ($rows as $row) {
-            $id   = $row->idppl_employee;
+            $id = $row->idppl_employee;
             $date = $row->date;
 
             if (!isset($grouped[$id])) {
                 $grouped[$id] = [
-                    'name'          => $row->name,
-                    'presence'      => [],
-                    'total_attend'  => 0
+                    'name' => $row->name,
+                    'presence' => [],
+                    'total_attend' => 0
                 ];
             }
 
-            if (isset($daily_status[$id][$date])) {
-                continue;
-            }
+            // default kosong
+            $grouped[$id]['presence'][$date] = '';
 
-            $grouped[$id]['presence'][$date] = '-';
-
+            // hadir normal
             if ($row->check_in && $row->check_out) {
-                $check_in_time  = strtotime($row->check_in);
-                $check_out_time = strtotime($row->check_out);
-
-                $day_of_week = date('N', strtotime($date));
-                if ($day_of_week == 6) {
-                    $late_limit  = strtotime('08:10:00');
-                    $early_limit = strtotime('13:00:00');
-                } else {
-                    $late_limit  = strtotime('08:10:00');
-                    $early_limit = strtotime('16:30:00');
-                }
-
-                if ($check_in_time <= $late_limit && $check_out_time >= $early_limit) {
-                    $grouped[$id]['presence'][$date] = '✓';
-                    $grouped[$id]['total_attend']++;
-                    $daily_status[$id][$date] = true;
-                }
-            } elseif (strtolower($row->timeoff_reason ?? '') === 'dinas' && $row->is_verify == 1) {
+                $grouped[$id]['presence'][$date] = '✓';
+                $grouped[$id]['total_attend']++;
+            }
+            // dinas (time off verifikasi)
+            elseif (strtolower($row->timeoff_reason ?? '') == 'dinas' && $row->is_verify == 1) {
                 $grouped[$id]['presence'][$date] = 'C';
                 $grouped[$id]['total_attend']++;
-                $daily_status[$id][$date] = true;
             }
         }
 
-        // =========================
-        // Export Excel
-        // =========================
+        // =============== Excel ===============
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
+        // Buat daftar tanggal
         $period = new DatePeriod(
             new DateTime($start),
             new DateInterval('P1D'),
@@ -211,47 +191,36 @@ class Allowance extends CI_Controller
         );
         $dates = iterator_to_array($period);
 
-        // kolom terakhir
-        $lastCol = chr(ord('C') + count($dates) + 3); // C + jumlah tanggal + 3 kolom tambahan
+        // Cari kolom terakhir
+        $lastCol = chr(ord('C') + count($dates) + 3);
 
-        // -----------------
-        // HEADER TITLE
-        // -----------------
+        // Judul
         $sheet->mergeCells('A1:' . $lastCol . '1');
         $sheet->setCellValue('A1', 'Asta Homeware');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
         $sheet->getStyle('A1')->getAlignment()
-            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
-            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
         $sheet->mergeCells('A2:' . $lastCol . '2');
         $sheet->setCellValue('A2', 'Data Verifikasi Transaksi');
         $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(14);
         $sheet->getStyle('A2')->getAlignment()
-            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
-            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
         $sheet->mergeCells('A3:' . $lastCol . '3');
         $sheet->setCellValue('A3', 'Periode: ' . $start . ' s/d ' . $end);
         $sheet->getStyle('A3')->getFont()->setSize(12);
         $sheet->getStyle('A3')->getAlignment()
-            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
-            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
-        $sheet->getRowDimension(1)->setRowHeight(25);
-        $sheet->getRowDimension(2)->setRowHeight(22);
-        $sheet->getRowDimension(3)->setRowHeight(20);
-
-        // -----------------
-        // HEADER TABEL
-        // -----------------
+        // Header tabel
         $headerRow = 5;
         $sheet->setCellValue('A' . $headerRow, 'No');
         $sheet->setCellValue('B' . $headerRow, 'Nama');
-
         $col = 'C';
         foreach ($dates as $d) {
             $sheet->setCellValue($col . $headerRow, $d->format('j'));
+            // Minggu = merah
             if ($d->format('N') == 7) {
                 $sheet->getStyle($col . $headerRow)->getFill()
                     ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
@@ -259,15 +228,12 @@ class Allowance extends CI_Controller
             }
             $col++;
         }
-
         $sheet->setCellValue($col . $headerRow, 'Total');
         $sheet->setCellValue(++$col . $headerRow, 'UM');
         $sheet->setCellValue(++$col . $headerRow, 'Jumlah');
         $sheet->setCellValue(++$col . $headerRow, 'TTD');
 
-        // -----------------
-        // ISI DATA
-        // -----------------
+        // Isi data
         $rowExcel = $headerRow + 1;
         $no = 1;
         foreach ($grouped as $emp) {
@@ -280,6 +246,7 @@ class Allowance extends CI_Controller
                 $val = isset($emp['presence'][$dateStr]) ? $emp['presence'][$dateStr] : '';
                 $sheet->setCellValue($col . $rowExcel, $val);
 
+                // Minggu kasih warna pink
                 if ($d->format('N') == 7) {
                     $sheet->getStyle($col . $rowExcel)->getFill()
                         ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
@@ -289,14 +256,14 @@ class Allowance extends CI_Controller
             }
 
             $total_attend = $emp['total_attend'];
-            $sheet->setCellValue($col . $rowExcel, $total_attend); // Total
+            $sheet->setCellValue($col . $rowExcel, $total_attend);
 
-            // UM selalu 20.000
+            // UM Rp20.000
             $sheet->setCellValue(++$col . $rowExcel, 20000);
             $sheet->getStyle($col . $rowExcel)->getNumberFormat()
                 ->setFormatCode('"Rp"#,##0');
 
-            // Jumlah = total_attend x 20000
+            // Jumlah
             $jumlah = $total_attend * 20000;
             $sheet->setCellValue(++$col . $rowExcel, $jumlah);
             $sheet->getStyle($col . $rowExcel)->getNumberFormat()
@@ -308,26 +275,22 @@ class Allowance extends CI_Controller
             $rowExcel++;
         }
 
-        // -----------------
-        // STYLE
-        // -----------------
-        foreach (range('A', $col) as $c) {
-            $sheet->getColumnDimension($c)->setAutoSize(true);
-        }
-
+        // Border
         $lastRow = $rowExcel - 1;
         $sheet->getStyle('A' . $headerRow . ':' . $col . $lastRow)
             ->getBorders()->getAllBorders()
             ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
-        // -----------------
-        // OUTPUT
-        // -----------------
+        // Auto size kolom
+        foreach (range('A', $col) as $c) {
+            $sheet->getColumnDimension($c)->setAutoSize(true);
+        }
+
+        // Output
         $filename = "Absensi_" . date('Ymd_His') . ".xlsx";
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');
-
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $writer->save('php://output');
         exit;
