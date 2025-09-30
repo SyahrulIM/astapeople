@@ -202,7 +202,7 @@ class Allowance extends CI_Controller
             ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
         $sheet->mergeCells('A2:' . $lastCol . '2');
-        $sheet->setCellValue('A2', 'Data Verifikasi Transaksi');
+        $sheet->setCellValue('A2', 'Laporan Absensi Karyawan');
         $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(14);
         $sheet->getStyle('A2')->getAlignment()
             ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
