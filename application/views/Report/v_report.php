@@ -295,48 +295,47 @@
         });
     });
 
-    $(document).ready(function() {
-        $(".btn-edit").on("click", function() {
-            let employeeId = $(this).data("employee-id");
-            let date = $(this).data("date");
+    $(document).on("click", ".btn-edit", function() {
+        let employeeId = $(this).data("employee-id");
+        let date = $(this).data("date");
 
-            $.ajax({
-                url: "<?= base_url('report/get_attendance_detail') ?>",
-                type: "POST",
-                dataType: "json",
-                data: {
-                    employee_id: employeeId,
-                    date: date
-                },
-                success: function(res) {
-                    if (res.status === "success") {
-                        let data = res.data;
+        $.ajax({
+            url: "<?= base_url('report/get_attendance_detail') ?>",
+            type: "POST",
+            dataType: "json",
+            data: {
+                employee_id: employeeId,
+                date: date
+            },
+            success: function(res) {
+                if (res.status === "success") {
+                    let data = res.data;
 
-                        // isi detail info
-                        $("#detailEmployee").text(data.employee_name);
-                        $("#detailDate").text(data.date);
-                        $("#detailCheckIn").text(data.check_in || "-");
-                        $("#detailCheckOut").text(data.check_out || "-");
-                        $("#detailStatus").text(data.status || "-");
+                    // isi detail info
+                    $("#detailEmployee").text(data.employee_name);
+                    $("#detailDate").text(data.date);
+                    $("#detailCheckIn").text(data.check_in || "-");
+                    $("#detailCheckOut").text(data.check_out || "-");
+                    $("#detailStatus").text(data.status || "-");
 
-                        // isi input form
-                        $("#modalEmployeeId").val(employeeId);
-                        $("#modalDate").val(data.date);
-                        $("#time_start").val(data.check_in);
-                        $("#time_end").val(data.check_out);
+                    // isi input form
+                    $("#modalEmployeeId").val(employeeId);
+                    $("#modalDate").val(data.date);
+                    $("#time_start").val(data.check_in);
+                    $("#time_end").val(data.check_out);
 
-                        // buka modal
-                        $("#modalEdit").modal("show");
-                    } else {
-                        alert(res.message);
-                    }
-                },
-                error: function() {
-                    alert("Gagal ambil data. Coba lagi!");
+                    // buka modal
+                    $("#modalEdit").modal("show");
+                } else {
+                    alert(res.message);
                 }
-            });
+            },
+            error: function() {
+                alert("Gagal ambil data. Coba lagi!");
+            }
         });
     });
+
     $(document).on("submit", "#permitForm", function(e) {
         e.preventDefault();
 
