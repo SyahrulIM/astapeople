@@ -130,16 +130,14 @@ if ($start && $end) {
             }
         });
 
-        // Handle checkbox toggle
-        $('#togglePeriodeColumns').on('change', function() {
+        $(document).on('change', '#togglePeriodeColumns', function() {
             const isVisible = $(this).is(':checked');
-            $('.periode-column').toggle(isVisible);
+            table.columns('.periode-column').visible(isVisible);
         });
 
-        // Set initial visibility based on server value
         const isPeriodeVisible = <?= $show_periode == '1' ? 'true' : 'false' ?>;
         if (!isPeriodeVisible) {
-            $('.periode-column').hide();
+            table.columns('.periode-column').visible(false);
         }
     });
 </script>

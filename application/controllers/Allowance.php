@@ -140,7 +140,8 @@ class Allowance extends CI_Controller
         // Ambil data absensi + time off
         $sql = "
         SELECT 
-            e.idppl_employee, e.name, d.date, d.check_in, d.check_out,
+            e.idppl_employee, e.name, d.date, d.check_in, d.check_out, d.reason,
+            d.is_edit,
             t.reason AS timeoff_reason, t.is_verify
         FROM ppl_employee e
         LEFT JOIN ppl_presence_detail d ON e.idppl_employee = d.idppl_employee
@@ -150,33 +151,66 @@ class Allowance extends CI_Controller
     ";
         $rows = $this->db->query($sql, [$start, $end])->result();
 
-        // Grouping per karyawan
+        // Grouping per karyawan - gunakan logic yang sama seperti index()
         $grouped = [];
+        $daily_status = []; // untuk mencegah double count per hari
+
         foreach ($rows as $row) {
-            $id = $row->idppl_employee;
+            $id   = $row->idppl_employee;
             $date = $row->date;
 
             if (!isset($grouped[$id])) {
                 $grouped[$id] = [
-                    'name' => $row->name,
-                    'presence' => [],
-                    'total_attend' => 0
+                    'name'         => $row->name,
+                    'presence'     => [],
+                    'total_attend' => 0,
+                    'total_meal'   => 0
                 ];
             }
 
-            // default kosong
+            // skip kalau sudah dihitung untuk hari ini
+            if (isset($daily_status[$id][$date])) {
+                continue;
+            }
+
+            // default tanda kosong (bisa diubah sesuai kebutuhan)
             $grouped[$id]['presence'][$date] = '';
 
-            // hadir normal
+            // --- Kasus: hadir absen (harus ada check_in & check_out) ---
             if ($row->check_in && $row->check_out) {
-                $grouped[$id]['presence'][$date] = '✓';
-                $grouped[$id]['total_attend']++;
+                // ambil timestamp
+                $check_in_time  = strtotime($row->check_in);
+                $check_out_time = strtotime($row->check_out);
+
+                $day_of_week = date('N', strtotime($date)); // 1=Mon .. 6=Sat, 7=Sun
+                if ($day_of_week == 6) {
+                    // Sabtu
+                    $late_limit  = strtotime('08:10:00');
+                    $early_limit = strtotime('13:00:00');
+                } else {
+                    // Senin - Jumat
+                    $late_limit  = strtotime('08:10:00');
+                    $early_limit = strtotime('16:30:00');
+                }
+
+                // tidak telat & tidak pulang cepat
+                if ($check_in_time <= $late_limit && $check_out_time >= $early_limit) {
+                    // tanda hadir
+                    $grouped[$id]['presence'][$date] = '✓';
+
+                    // hitung hadir valid
+                    $grouped[$id]['total_attend']++;
+                    $grouped[$id]['total_meal']++; // kalau masih pakai total_meal
+                    $daily_status[$id][$date] = true;
+                }
             }
-            // dinas (time off verifikasi)
-            elseif (strtolower($row->timeoff_reason ?? '') == 'dinas' && $row->is_verify == 1) {
+            // --- Kasus: dinas disetujui ---
+            elseif (strtolower($row->timeoff_reason ?? '') === 'dinas' && $row->is_verify == 1) {
                 $grouped[$id]['presence'][$date] = 'C';
                 $grouped[$id]['total_attend']++;
+                $daily_status[$id][$date] = true;
             }
+            // lainnya tetap kosong / tidak dihitung
         }
 
         // =============== Excel ===============
@@ -191,27 +225,30 @@ class Allowance extends CI_Controller
         );
         $dates = iterator_to_array($period);
 
-        // Cari kolom terakhir
+        // Cari kolom terakhir (konversi sederhana - asumsikan jumlah kolom tidak melewati 'Z')
         $lastCol = chr(ord('C') + count($dates) + 3);
 
-        // Judul
+        // Judul (merge sampai kolom terakhir)
         $sheet->mergeCells('A1:' . $lastCol . '1');
         $sheet->setCellValue('A1', 'Asta Homeware');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
         $sheet->getStyle('A1')->getAlignment()
-            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
 
         $sheet->mergeCells('A2:' . $lastCol . '2');
         $sheet->setCellValue('A2', 'Laporan Absensi Karyawan');
         $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(14);
         $sheet->getStyle('A2')->getAlignment()
-            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
 
         $sheet->mergeCells('A3:' . $lastCol . '3');
         $sheet->setCellValue('A3', 'Periode: ' . $start . ' s/d ' . $end);
         $sheet->getStyle('A3')->getFont()->setSize(12);
         $sheet->getStyle('A3')->getAlignment()
-            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
 
         // Header tabel
         $headerRow = 5;
@@ -258,18 +295,18 @@ class Allowance extends CI_Controller
             $total_attend = $emp['total_attend'];
             $sheet->setCellValue($col . $rowExcel, $total_attend);
 
-            // UM Rp20.000
+            // UM Rp20.000 (format angka supaya bisa dijumlahkan di Excel)
             $sheet->setCellValue(++$col . $rowExcel, 20000);
             $sheet->getStyle($col . $rowExcel)->getNumberFormat()
                 ->setFormatCode('"Rp"#,##0');
 
-            // Jumlah
+            // Jumlah = total_attend * 20000
             $jumlah = $total_attend * 20000;
             $sheet->setCellValue(++$col . $rowExcel, $jumlah);
             $sheet->getStyle($col . $rowExcel)->getNumberFormat()
                 ->setFormatCode('"Rp"#,##0');
 
-            // TTD kosong
+            // TTD kosong (untuk tanda tangan manual)
             $sheet->setCellValue(++$col . $rowExcel, '');
 
             $rowExcel++;
@@ -287,7 +324,7 @@ class Allowance extends CI_Controller
         }
 
         // Output
-        $filename = "Absensi_" . date('Ymd_His') . ".xlsx";
+        $filename = "Asta_People_Laporan_Absensi" . date('Ymd_His') . ".xlsx";
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
         header('Cache-Control: max-age=0');
