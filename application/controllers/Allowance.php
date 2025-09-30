@@ -163,8 +163,7 @@ class Allowance extends CI_Controller
                 $grouped[$id] = [
                     'name'          => $row->name,
                     'presence'      => [],
-                    'total_attend'  => 0,
-                    'total_meal'    => 0
+                    'total_attend'  => 0
                 ];
             }
 
@@ -190,7 +189,6 @@ class Allowance extends CI_Controller
                 if ($check_in_time <= $late_limit && $check_out_time >= $early_limit) {
                     $grouped[$id]['presence'][$date] = '✓';
                     $grouped[$id]['total_attend']++;
-                    $grouped[$id]['total_meal']++;
                     $daily_status[$id][$date] = true;
                 }
             } elseif (strtolower($row->timeoff_reason ?? '') === 'dinas' && $row->is_verify == 1) {
@@ -219,7 +217,6 @@ class Allowance extends CI_Controller
         // -----------------
         // HEADER TITLE
         // -----------------
-        // Row 1
         $sheet->mergeCells('A1:' . $lastCol . '1');
         $sheet->setCellValue('A1', 'Asta Homeware');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
@@ -227,7 +224,6 @@ class Allowance extends CI_Controller
             ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
             ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
 
-        // Row 2
         $sheet->mergeCells('A2:' . $lastCol . '2');
         $sheet->setCellValue('A2', 'Data Verifikasi Transaksi');
         $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(14);
@@ -235,15 +231,13 @@ class Allowance extends CI_Controller
             ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
             ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
 
-        // Row 3
         $sheet->mergeCells('A3:' . $lastCol . '3');
         $sheet->setCellValue('A3', 'Periode: ' . $start . ' s/d ' . $end);
-        $sheet->getStyle('A3')->getFont()->setBold(false)->setSize(12);
+        $sheet->getStyle('A3')->getFont()->setSize(12);
         $sheet->getStyle('A3')->getAlignment()
             ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
             ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
 
-        // kasih tinggi baris biar rapi
         $sheet->getRowDimension(1)->setRowHeight(25);
         $sheet->getRowDimension(2)->setRowHeight(22);
         $sheet->getRowDimension(3)->setRowHeight(20);
@@ -258,7 +252,6 @@ class Allowance extends CI_Controller
         $col = 'C';
         foreach ($dates as $d) {
             $sheet->setCellValue($col . $headerRow, $d->format('j'));
-
             if ($d->format('N') == 7) {
                 $sheet->getStyle($col . $headerRow)->getFill()
                     ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
@@ -292,13 +285,24 @@ class Allowance extends CI_Controller
                         ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                         ->getStartColor()->setARGB('FFFFC0CB');
                 }
-
                 $col++;
             }
 
-            $sheet->setCellValue($col . $rowExcel, $emp['total_attend']);
-            $sheet->setCellValue(++$col . $rowExcel, $emp['total_meal']);
-            $sheet->setCellValue(++$col . $rowExcel, $emp['total_attend']);
+            $total_attend = $emp['total_attend'];
+            $sheet->setCellValue($col . $rowExcel, $total_attend); // Total
+
+            // UM selalu 20.000
+            $sheet->setCellValue(++$col . $rowExcel, 20000);
+            $sheet->getStyle($col . $rowExcel)->getNumberFormat()
+                ->setFormatCode('"Rp"#,##0');
+
+            // Jumlah = total_attend x 20000
+            $jumlah = $total_attend * 20000;
+            $sheet->setCellValue(++$col . $rowExcel, $jumlah);
+            $sheet->getStyle($col . $rowExcel)->getNumberFormat()
+                ->setFormatCode('"Rp"#,##0');
+
+            // TTD kosong
             $sheet->setCellValue(++$col . $rowExcel, '');
 
             $rowExcel++;
@@ -307,14 +311,13 @@ class Allowance extends CI_Controller
         // -----------------
         // STYLE
         // -----------------
-        // auto width
         foreach (range('A', $col) as $c) {
             $sheet->getColumnDimension($c)->setAutoSize(true);
         }
 
-        // border tabel
         $lastRow = $rowExcel - 1;
-        $sheet->getStyle('A' . $headerRow . ':' . $col . $lastRow)->getBorders()->getAllBorders()
+        $sheet->getStyle('A' . $headerRow . ':' . $col . $lastRow)
+            ->getBorders()->getAllBorders()
             ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
         // -----------------
