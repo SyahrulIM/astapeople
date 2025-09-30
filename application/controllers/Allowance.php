@@ -135,7 +135,7 @@ class Allowance extends CI_Controller
             show_error('Tanggal tidak boleh kosong');
         }
 
-        // ambil data hasil grouping dari index()
+        // ambil data hasil grouping
         $sql = "
         SELECT 
             e.idppl_employee, e.name, d.date, d.check_in, d.check_out, d.reason,
@@ -151,7 +151,7 @@ class Allowance extends CI_Controller
         $query = $this->db->query($sql, [$start, $end]);
         $rows  = $query->result();
 
-        // grouping seperti index()
+        // grouping
         $grouped = [];
         $daily_status = [];
 
@@ -213,34 +213,69 @@ class Allowance extends CI_Controller
         );
         $dates = iterator_to_array($period);
 
-        // Header
-        $sheet->setCellValue('A1', "Laporan Absensi Karyawan Absensi " . date('d M', strtotime($start)) . " - " . date('d M Y', strtotime($end)));
+        // kolom terakhir
+        $lastCol = chr(ord('C') + count($dates) + 3); // C + jumlah tanggal + 3 kolom tambahan
 
-        // kolom
-        $sheet->setCellValue('A2', 'No');
-        $sheet->setCellValue('B2', 'Nama');
+        // -----------------
+        // HEADER TITLE
+        // -----------------
+        // Row 1
+        $sheet->mergeCells('A1:' . $lastCol . '1');
+        $sheet->setCellValue('A1', 'Asta Homeware');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+        $sheet->getStyle('A1')->getAlignment()
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+
+        // Row 2
+        $sheet->mergeCells('A2:' . $lastCol . '2');
+        $sheet->setCellValue('A2', 'Data Verifikasi Transaksi');
+        $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A2')->getAlignment()
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+
+        // Row 3
+        $sheet->mergeCells('A3:' . $lastCol . '3');
+        $sheet->setCellValue('A3', 'Periode: ' . $start . ' s/d ' . $end);
+        $sheet->getStyle('A3')->getFont()->setBold(false)->setSize(12);
+        $sheet->getStyle('A3')->getAlignment()
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+
+        // kasih tinggi baris biar rapi
+        $sheet->getRowDimension(1)->setRowHeight(25);
+        $sheet->getRowDimension(2)->setRowHeight(22);
+        $sheet->getRowDimension(3)->setRowHeight(20);
+
+        // -----------------
+        // HEADER TABEL
+        // -----------------
+        $headerRow = 5;
+        $sheet->setCellValue('A' . $headerRow, 'No');
+        $sheet->setCellValue('B' . $headerRow, 'Nama');
 
         $col = 'C';
         foreach ($dates as $d) {
-            $sheet->setCellValue($col . '2', $d->format('j'));
+            $sheet->setCellValue($col . $headerRow, $d->format('j'));
 
-            // Tandai merah kalau hari Minggu
             if ($d->format('N') == 7) {
-                $sheet->getStyle($col . '2')->getFill()
+                $sheet->getStyle($col . $headerRow)->getFill()
                     ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                     ->getStartColor()->setARGB('FFFF0000');
             }
-
             $col++;
         }
 
-        $sheet->setCellValue($col . '2', 'Total');
-        $sheet->setCellValue(++$col . '2', 'UM');
-        $sheet->setCellValue(++$col . '2', 'Jumlah');
-        $sheet->setCellValue(++$col . '2', 'TTD');
+        $sheet->setCellValue($col . $headerRow, 'Total');
+        $sheet->setCellValue(++$col . $headerRow, 'UM');
+        $sheet->setCellValue(++$col . $headerRow, 'Jumlah');
+        $sheet->setCellValue(++$col . $headerRow, 'TTD');
 
-        // isi data
-        $rowExcel = 3;
+        // -----------------
+        // ISI DATA
+        // -----------------
+        $rowExcel = $headerRow + 1;
         $no = 1;
         foreach ($grouped as $emp) {
             $sheet->setCellValue('A' . $rowExcel, $no++);
@@ -252,11 +287,10 @@ class Allowance extends CI_Controller
                 $val = isset($emp['presence'][$dateStr]) ? $emp['presence'][$dateStr] : '';
                 $sheet->setCellValue($col . $rowExcel, $val);
 
-                // merah untuk Minggu
                 if ($d->format('N') == 7) {
                     $sheet->getStyle($col . $rowExcel)->getFill()
                         ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-                        ->getStartColor()->setARGB('FFFFC0CB'); // pink/merah muda
+                        ->getStartColor()->setARGB('FFFFC0CB');
                 }
 
                 $col++;
@@ -264,18 +298,28 @@ class Allowance extends CI_Controller
 
             $sheet->setCellValue($col . $rowExcel, $emp['total_attend']);
             $sheet->setCellValue(++$col . $rowExcel, $emp['total_meal']);
-            $sheet->setCellValue(++$col . $rowExcel, $emp['total_attend']); // contoh Jumlah sama total
-            $sheet->setCellValue(++$col . $rowExcel, $no - 1);
+            $sheet->setCellValue(++$col . $rowExcel, $emp['total_attend']);
+            $sheet->setCellValue(++$col . $rowExcel, '');
 
             $rowExcel++;
         }
 
+        // -----------------
+        // STYLE
+        // -----------------
         // auto width
         foreach (range('A', $col) as $c) {
             $sheet->getColumnDimension($c)->setAutoSize(true);
         }
 
-        // output
+        // border tabel
+        $lastRow = $rowExcel - 1;
+        $sheet->getStyle('A' . $headerRow . ':' . $col . $lastRow)->getBorders()->getAllBorders()
+            ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+
+        // -----------------
+        // OUTPUT
+        // -----------------
         $filename = "Absensi_" . date('Ymd_His') . ".xlsx";
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="' . $filename . '"');
