@@ -144,6 +144,33 @@
                 </div>
                 <!-- End -->
 
+                <!-- Start Modal Konfirmasi Delete -->
+                <div class="modal fade" id="modalDelete" tabindex="-1" aria-labelledby="modalDeleteLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <form method="post" action="<?= site_url('time_off/deleteRequest') ?>">
+                            <div class="modal-content">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title" id="modalDeleteLabel">Konfirmasi Hapus</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="hidden" name="idtime_off" id="delete_id">
+                                    <p>
+                                        Apakah kamu yakin ingin menghapus request
+                                        <b id="delete_reason"></b> pada tanggal
+                                        <b id="delete_date"></b>?
+                                    </p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- End -->
+
                 <div class="row">
                     <div class="col">
                         <table id="tableproduct" class="display" style="width:100%">
@@ -189,6 +216,12 @@
                                         <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 6) { ?>
                                         <button type="button" class="btn btn-success btn-verify" data-id="<?= $dtovalue->idtime_off ?>" data-reason="<?= $dtovalue->reason ?>" data-date="<?= $dtovalue->date ?>" data-bs-toggle="modal" data-bs-target="#modalVerify">
                                             Edit Verifikasi
+                                        </button>
+                                        <?php } ?>
+
+                                        <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 6) { ?>
+                                        <button type="button" class="btn btn-danger btn-delete" data-id="<?= $dtovalue->idtime_off ?>" data-reason="<?= $dtovalue->reason ?>" data-date="<?= $dtovalue->date ?>" data-bs-toggle="modal" data-bs-target="#modalDelete">
+                                            Delete
                                         </button>
                                         <?php } ?>
                                     </td>
@@ -268,6 +301,16 @@
                             document.getElementById('verify_id').value = id;
                             document.getElementById('verify_reason').textContent = reason;
                             document.getElementById('verify_date').textContent = date;
+                        });
+                    });
+                });
+                document.addEventListener('DOMContentLoaded', function() {
+                    const deleteButtons = document.querySelectorAll('.btn-delete');
+                    deleteButtons.forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            document.getElementById('delete_id').value = this.getAttribute('data-id');
+                            document.getElementById('delete_reason').textContent = this.getAttribute('data-reason');
+                            document.getElementById('delete_date').textContent = this.getAttribute('data-date');
                         });
                     });
                 });

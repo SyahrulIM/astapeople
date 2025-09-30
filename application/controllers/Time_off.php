@@ -25,6 +25,7 @@ class Time_off extends CI_Controller
                       ppl_time_off.idppl_time_off as idtime_off
                       ')
                 ->join('user', 'user.iduser = ppl_time_off.iduser')
+                ->where('ppl_time_off.status', 1)
                 ->order_by('date', 'DESC')
                 ->get('ppl_time_off')->result();
         } else {
@@ -35,6 +36,7 @@ class Time_off extends CI_Controller
                       ppl_time_off.idppl_time_off as idtime_off
                       ')
                 ->where('iduser', $this->session->userdata('iduser'))
+                ->where('ppl_time_off.status', 1)
                 ->get('ppl_time_off')
                 ->result();
         }
@@ -148,6 +150,17 @@ class Time_off extends CI_Controller
 
         $this->db->update('ppl_time_off', ['is_verify' => $action], ['idppl_time_off' => $id]);
         $this->session->set_flashdata('success', 'Request berhasil diperbarui.');
+        redirect('time_off');
+    }
+
+    public function deleteRequest()
+    {
+        $id = $this->input->post('idtime_off');
+
+        $this->db->where('idppl_time_off', $id);
+        $this->db->update('ppl_time_off', ['status' => 0]);
+
+        $this->session->set_flashdata('success', 'Request berhasil dihapus.');
         redirect('time_off');
     }
 }
