@@ -322,4 +322,27 @@ class User extends CI_Controller
 
         redirect($_SERVER['HTTP_REFERER']);
     }
+
+    public function changeUsername()
+    {
+        $data = [
+            'username' => $this->input->post('inputUsername')
+        ];
+        $this->db->where('iduser', $this->session->userdata('iduser'));
+        $this->db->update('user', $data);
+        redirect($_SERVER['HTTP_REFERER']);
+    }
+
+    public function changePassword()
+    {
+        if (!empty($this->input->post('inputPassword'))) {
+            $hashedPassword = password_hash($this->input->post('inputPassword'), PASSWORD_DEFAULT);
+        }
+        $data = [
+            'password' => $hashedPassword
+        ];
+        $this->db->where('iduser', $this->session->userdata('iduser'));
+        $this->db->update('user', $data);
+        redirect($_SERVER['HTTP_REFERER']);
+    }
 }
