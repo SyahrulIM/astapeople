@@ -21,11 +21,15 @@ class Bank_password extends CI_Controller
 
         // Start Data Bank Password
         $this->db->select('bp.*, 
-        GROUP_CONCAT(u.full_name SEPARATOR ", ") as pic_names,
-        GROUP_CONCAT(pic.iduser) as pic_ids');
+        GROUP_CONCAT(DISTINCT u.full_name SEPARATOR ", ") as pic_names,
+        GROUP_CONCAT(DISTINCT pic.iduser) as pic_ids,
+        GROUP_CONCAT(DISTINCT d.devices SEPARATOR ", ") as device_names,
+        GROUP_CONCAT(DISTINCT d.idppl_devices) as device_ids');
         $this->db->from('ppl_bank_password bp');
         $this->db->join('ppl_pic_bank_password pic', 'bp.idppl_bank_password = pic.idppl_bank_password', 'left');
         $this->db->join('user u', 'pic.iduser = u.iduser', 'left');
+        $this->db->join('ppl_devices_bank_password dbp', 'bp.idppl_bank_password = dbp.idppl_bank_password', 'left');
+        $this->db->join('ppl_devices d', 'dbp.idppl_devices = d.idppl_devices', 'left');
         $this->db->where('bp.status', 1);
         if ($filter_account) {
             $this->db->where('bp.account', $filter_account);
@@ -158,7 +162,7 @@ class Bank_password extends CI_Controller
         // End
 
         // echo '<pre>';
-        // print_r($account->result());
+        // print_r($devices->result());
         // die;
 
         $data = [
@@ -184,7 +188,7 @@ class Bank_password extends CI_Controller
     public function createBankAccount()
     {
         $data = [
-            'account' => $this->input->post('account'), // bikin uppercase
+            'account' => strtoupper($this->input->post('account')), // bikin uppercase
             'browser' => $this->input->post('browser'),
             'email' => $this->input->post('email'),
             'password' => $this->input->post('password'),
@@ -215,6 +219,18 @@ class Bank_password extends CI_Controller
             }
         }
 
+        // simpan Devices kalau ada
+        $devices_ids = $this->input->post('devices_ids'); // format: "4,5,6"
+        if (!empty($devices_ids)) {
+            $deviceArray = explode(',', $devices_ids);
+            foreach ($deviceArray as $iddevice) {
+                $this->db->insert('ppl_devices_bank_password', [
+                    'idppl_bank_password' => $idppl_bank_password,
+                    'idppl_devices' => $iddevice
+                ]);
+            }
+        }
+
         $this->session->set_flashdata('success', 'Account & Password berhasil ditambahkan.');
         redirect('bank_password');
     }
@@ -222,23 +238,29 @@ class Bank_password extends CI_Controller
     public function edit($id)
     {
         $this->db->select('bp.*, 
-        GROUP_CONCAT(u.iduser SEPARATOR ",") as pic_ids,
-        GROUP_CONCAT(u.full_name SEPARATOR ", ") as pic_names');
+        GROUP_CONCAT(DISTINCT u.iduser SEPARATOR ",") as pic_ids,
+        GROUP_CONCAT(DISTINCT u.full_name SEPARATOR ", ") as pic_names,
+        GROUP_CONCAT(DISTINCT d.idppl_devices SEPARATOR ",") as device_ids,
+        GROUP_CONCAT(DISTINCT d.devices SEPARATOR ", ") as device_names
+    ');
         $this->db->from('ppl_bank_password bp');
         $this->db->join('ppl_pic_bank_password pic', 'bp.idppl_bank_password = pic.idppl_bank_password', 'left');
         $this->db->join('user u', 'pic.iduser = u.iduser', 'left');
+        $this->db->join('ppl_devices_bank_password dbp', 'bp.idppl_bank_password = dbp.idppl_bank_password', 'left');
+        $this->db->join('ppl_devices d', 'dbp.idppl_devices = d.idppl_devices', 'left');
         $this->db->where('bp.idppl_bank_password', $id);
         $this->db->group_by('bp.idppl_bank_password');
 
         $query = $this->db->get();
         $data = $query->row();
 
-        // setelah $data = $query->row();
         if ($data) {
-            // hapus whitespace yang tidak perlu agar di JS langsung cocok dengan option[value]
-            $data->pic_ids = isset($data->pic_ids) && $data->pic_ids !== null
-                ? preg_replace('/\s+/', '', $data->pic_ids)
-                : '';
+            // bersihin spasi PIC ids
+            $data->pic_ids = isset($data->pic_ids) ? preg_replace('/\s+/', '', $data->pic_ids) : '';
+
+            // bersihin spasi device ids
+            $data->device_ids = isset($data->device_ids) ? preg_replace('/\s+/', '', $data->device_ids) : '';
+
             echo json_encode([
                 'status' => 'success',
                 'data' => $data
@@ -260,13 +282,15 @@ class Bank_password extends CI_Controller
             'updated_date' => date("Y-m-d H:i:s")
         ];
 
+        // Update data utama
         $this->db->where('idppl_bank_password', $id);
         $this->db->update('ppl_bank_password', $data);
 
+        // --- Reset PICs lama ---
         $this->db->where('idppl_bank_password', $id);
         $this->db->delete('ppl_pic_bank_password');
 
-        // Add new PICs if any
+        // Tambah PIC baru
         $pic_ids = $this->input->post('pic_ids');
         if (!empty($pic_ids)) {
             $picArray = explode(',', $pic_ids);
@@ -275,6 +299,24 @@ class Bank_password extends CI_Controller
                     $this->db->insert('ppl_pic_bank_password', [
                         'idppl_bank_password' => $id,
                         'iduser' => $iduser
+                    ]);
+                }
+            }
+        }
+
+        // --- Reset Devices lama ---
+        $this->db->where('idppl_bank_password', $id);
+        $this->db->delete('ppl_devices_bank_password');
+
+        // Tambah Devices baru
+        $device_ids = $this->input->post('devices_ids');
+        if (!empty($device_ids)) {
+            $deviceArray = explode(',', $device_ids);
+            foreach ($deviceArray as $deviceId) {
+                if (!empty($deviceId)) {
+                    $this->db->insert('ppl_devices_bank_password', [
+                        'idppl_bank_password' => $id,
+                        'idppl_devices' => $deviceId
                     ]);
                 }
             }

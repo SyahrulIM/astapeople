@@ -393,19 +393,23 @@
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Perangkat</label>
-                            <select id="selectDevice" class="form-select">
-                                <option value="">-- Pilih Perangkat --</option>
-                                <?php foreach ($users as $u) : ?>
-                                <option value="<?= $u->iduser ?>"><?= $u->full_name ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
                         <!-- tempat bubble -->
                         <div id="picContainer" class="mb-3"></div>
                         <!-- hidden input untuk simpan id PIC -->
                         <input type="hidden" name="pic_ids" id="picIds">
+                        <div class="mb-3">
+                            <label class="form-label">Perangkat</label>
+                            <select id="selectDevice" class="form-select">
+                                <option value="">-- Pilih Perangkat --</option>
+                                <?php foreach ($devices as $d) : ?>
+                                <option value="<?= $d->idppl_devices ?>"><?= $d->devices ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <!-- tempat bubble -->
+                        <div id="devicesContainer" class="mb-3"></div>
+                        <!-- hidden input untuk simpan id devices -->
+                        <input type="hidden" name="devices_ids" id="devicesIds">
                         <div class="mb-3">
                             <label class="form-label">Keterangan</label>
                             <textarea class="form-control" name="description"></textarea>
@@ -520,6 +524,17 @@
                         <div id="editPicContainer" class="mb-3"></div>
                         <input type="hidden" name="pic_ids" id="editPicIds">
                         <div class="mb-3">
+                            <label class="form-label">Devices</label>
+                            <select id="editSelectDevice" class="form-select">
+                                <option value="">-- Pilih Device --</option>
+                                <?php foreach ($devices as $d) : ?>
+                                <option value="<?= $d->idppl_devices ?>"><?= $d->devices ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div id="editDeviceContainer" class="mb-3"></div>
+                        <input type="hidden" name="devices_ids" id="editDeviceIds">
+                        <div class="mb-3">
                             <label class="form-label">Keterangan</label>
                             <textarea class="form-control" id="editDescription" name="description"></textarea>
                         </div>
@@ -547,6 +562,7 @@
                         <th>Email</th>
                         <th>Password</th>
                         <th>Verifikasi</th>
+                        <th>Devices</th>
                         <th>Keterangan</th>
                         <th>Action</th>
                     </tr>
@@ -564,11 +580,10 @@
                         <td><?php echo $vbp->email; ?></td>
                         <td><?php echo $vbp->password; ?></td>
                         <td><?php echo $vbp->verification; ?></td>
+                        <td><?php echo $vbp->device_names ? $vbp->device_names : '-'; ?></td>
                         <td><?php echo $vbp->description; ?></td>
                         <td>
-                            <button class="btn btn-warning btn-edit">
-                                Edit
-                            </button>
+                            <button class="btn btn-warning btn-edit">Edit</button>
                             <button class="btn btn-danger btn-delete">Delete</button>
                         </td>
                     </tr>
@@ -589,7 +604,7 @@
 
 <script>
     $(document).ready(function() {
-        // --- DataTable init (biarkan seperti semula) ---
+        // --- DataTable init ---
         var table = new DataTable('#tableReport', {
             responsive: false,
             scrollX: true,
@@ -614,16 +629,15 @@
 
             if (!selectedPics.includes(userId)) {
                 selectedPics.push(userId);
-                updateBubbles();
+                updatePicBubbles();
             }
-            this.value = ""; // reset dropdown setelah pilih
+            this.value = "";
         });
 
-        function updateBubbles() {
+        function updatePicBubbles() {
             const container = $('#picContainer');
             container.empty();
 
-            // normalize & dedupe
             selectedPics = Array.from(new Set(selectedPics.map(x => String(x).trim()).filter(Boolean)));
 
             selectedPics.forEach(id => {
@@ -631,7 +645,7 @@
                 const bubble = $(`
                 <span class="badge bg-primary me-2 mb-2">
                     ${userName}
-                    <button type="button" class="btn-close btn-close-white btn-sm ms-1 remove-pic" data-id="${id}" aria-label="Remove"></button>
+                    <button type="button" class="btn-close btn-close-white btn-sm ms-1 remove-pic" data-id="${id}"></button>
                 </span>`);
                 container.append(bubble);
             });
@@ -642,14 +656,56 @@
         $('#picContainer').on('click', '.remove-pic', function() {
             const id = String($(this).data('id'));
             selectedPics = selectedPics.filter(item => String(item) !== id);
-            updateBubbles();
+            updatePicBubbles();
         });
 
-        // Ensure hidden pic_ids is correct before actual form submit (Add form)
+        // ---------------- ADD DEVICES ----------------
+        let selectedDevices = [];
+
+        $('#selectDevice').on('change', function() {
+            const deviceId = $.trim(this.value);
+            if (!deviceId) {
+                this.value = '';
+                return;
+            }
+
+            if (!selectedDevices.includes(deviceId)) {
+                selectedDevices.push(deviceId);
+                updateDeviceBubbles();
+            }
+            this.value = "";
+        });
+
+        function updateDeviceBubbles() {
+            const container = $('#devicesContainer');
+            container.empty();
+
+            selectedDevices = Array.from(new Set(selectedDevices.map(x => String(x).trim()).filter(Boolean)));
+
+            selectedDevices.forEach(id => {
+                const deviceName = $(`#selectDevice option[value="${id}"]`).text() || 'Unknown';
+                const bubble = $(`
+                <span class="badge bg-primary me-2 mb-2">
+                    ${deviceName}
+                    <button type="button" class="btn-close btn-close-white btn-sm ms-1 remove-devices" data-id="${id}"></button>
+                </span>`);
+                container.append(bubble);
+            });
+
+            $('#devicesIds').val(selectedDevices.join(','));
+        }
+
+        $('#devicesContainer').on('click', '.remove-devices', function() {
+            const id = String($(this).data('id'));
+            selectedDevices = selectedDevices.filter(item => String(item) !== id);
+            updateDeviceBubbles();
+        });
+
+        // ---------------- Form Submit ADD ----------------
         $('#modalAdd form').on('submit', function() {
             $('#picIds').val(selectedPics.join(','));
+            $('#devicesIds').val(selectedDevices.join(','));
         });
-
 
         // ---------------- EDIT PIC ----------------
         let editSelectedPics = [];
@@ -665,14 +721,13 @@
                 editSelectedPics.push(userId);
                 updateEditBubbles();
             }
-            this.value = ""; // reset dropdown setelah pilih
+            this.value = "";
         });
 
         function updateEditBubbles() {
             const container = $('#editPicContainer');
             container.empty();
 
-            // normalize & dedupe
             editSelectedPics = Array.from(new Set(editSelectedPics.map(x => String(x).trim()).filter(Boolean)));
 
             editSelectedPics.forEach(id => {
@@ -680,7 +735,7 @@
                 const bubble = $(`
                 <span class="badge bg-primary me-2 mb-2">
                     ${userName}
-                    <button type="button" class="btn-close btn-close-white btn-sm ms-1 remove-edit-pic" data-id="${id}" aria-label="Remove"></button>
+                    <button type="button" class="btn-close btn-close-white btn-sm ms-1 remove-edit-pic" data-id="${id}"></button>
                 </span>`);
                 container.append(bubble);
             });
@@ -694,13 +749,47 @@
             updateEditBubbles();
         });
 
-        // Handle Edit Button Click (ajax fetch, then populate)
+        // ---------------- EDIT DEVICES ----------------
+        let editSelectedDevices = [];
+
+        $("#editSelectDevice").on("change", function() {
+            let id = $(this).val();
+            if (id && !editSelectedDevices.includes(id)) {
+                editSelectedDevices.push(id);
+                updateEditDeviceBubbles();
+            }
+            $(this).val("");
+        });
+
+        function updateEditDeviceBubbles() {
+            let container = $("#editDeviceContainer");
+            container.html("");
+            editSelectedDevices.forEach(id => {
+                let text = $("#editSelectDevice option[value='" + id + "']").text();
+                container.append(`
+                <span class="badge bg-info me-1">
+                    ${text}
+                    <button type="button" class="btn-close btn-close-white btn-sm ms-1 remove-edit-device" data-id="${id}"></button>
+                </span>`);
+            });
+            $("#editDeviceIds").val(editSelectedDevices.join(","));
+        }
+
+        $(document).on("click", ".remove-edit-device", function() {
+            let id = $(this).data("id");
+            editSelectedDevices = editSelectedDevices.filter(d => d !== String(id));
+            updateEditDeviceBubbles();
+        });
+
+        // ---------------- Handle Edit Button ----------------
         $(document).on('click', '.btn-edit', function() {
             let id = $(this).closest('tr').data('id');
 
-            // clear previous edit state
+            // clear previous state
             editSelectedPics = [];
+            editSelectedDevices = [];
             updateEditBubbles();
+            updateEditDeviceBubbles();
 
             $.ajax({
                 url: "<?= base_url('bank_password/edit/') ?>" + id,
@@ -710,7 +799,6 @@
                     if (res.status === "success") {
                         let data = res.data;
 
-                        // Fill form with existing data
                         $("#editId").val(id);
                         $("#editAccount").val(data.account);
                         $("#editBrowser").val(data.browser);
@@ -720,33 +808,35 @@
                         $("#editCategory").val(data.category);
                         $("#editDescription").val(data.description);
 
-                        // Handle PICs (trim spaces and ignore empty)
-                        let picIds = [];
-                        if (data.pic_ids && data.pic_ids.length) {
-                            picIds = data.pic_ids.split(',').map(s => s.trim()).filter(Boolean);
+                        // PICs
+                        if (data.pic_ids) {
+                            editSelectedPics = data.pic_ids.split(',').map(s => s.trim()).filter(Boolean);
+                            updateEditBubbles();
                         }
-                        editSelectedPics = picIds;
-                        updateEditBubbles();
 
-                        // Show modal
+                        // ✅ FIX: pakai device_ids (bukan devices_ids)
+                        if (data.device_ids) {
+                            editSelectedDevices = data.device_ids.split(',').map(s => s.trim()).filter(Boolean);
+                            updateEditDeviceBubbles();
+                        }
+
                         $("#modalEdit").modal("show");
                     } else {
                         alert(res.message || "Gagal mengambil data.");
                     }
                 },
-                error: function(xhr, status, err) {
+                error: function(xhr) {
                     console.error(xhr.responseText);
                     alert("Gagal mengambil data. Coba lagi!");
                 }
             });
         });
 
-        // Handle Edit Form Submission (AJAX)
+        // ---------------- Handle Edit Form Submit ----------------
         $("#editForm").on("submit", function(e) {
             e.preventDefault();
-
-            // make sure hidden input up-to-date
             $('#editPicIds').val(editSelectedPics.join(','));
+            $('#editDeviceIds').val(editSelectedDevices.join(','));
 
             let id = $("#editId").val();
 
@@ -764,14 +854,14 @@
                         alert(res.message || "Gagal memperbarui data.");
                     }
                 },
-                error: function(xhr, status, error) {
+                error: function(xhr) {
                     console.error(xhr.responseText);
                     alert("Terjadi kesalahan saat memperbarui data!");
                 }
             });
         });
 
-        // Delete handler (biarkan seperti semula)
+        // ---------------- Delete ----------------
         $(document).on('click', '.btn-delete', function() {
             if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
                 let id = $(this).closest('tr').data('id');
@@ -788,13 +878,12 @@
                             alert(res.message);
                         }
                     },
-                    error: function(xhr, status, error) {
+                    error: function(xhr) {
                         console.error(xhr.responseText);
                         alert("Gagal menghapus data. Coba lagi!");
                     }
                 });
             }
         });
-
     });
 </script>
