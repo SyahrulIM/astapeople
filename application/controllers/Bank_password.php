@@ -145,6 +145,10 @@ class Bank_password extends CI_Controller
         $pic_filter = $this->db->get();
         // End
 
+        // Start devices
+        $devices = $this->db->get('ppl_devices');
+        // End
+
         // Start hitung berapa filter aktif
         $active_filters = 0;
         if ($filter_account) $active_filters++;
@@ -169,7 +173,8 @@ class Bank_password extends CI_Controller
             'verification_filter' => $verification_filter->result(),
             'pic_filter' => $pic_filter->result(),
             'active_filters' => $active_filters,
-            'users' => $this->db->get('user')->result()
+            'users' => $this->db->get('user')->result(),
+            'devices' => $devices->result(),
         ];
 
         $this->load->view('theme/v_head', $data);

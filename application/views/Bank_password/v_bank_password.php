@@ -393,6 +393,15 @@
                                 <?php endforeach; ?>
                             </select>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Perangkat</label>
+                            <select id="selectDevice" class="form-select">
+                                <option value="">-- Pilih Perangkat --</option>
+                                <?php foreach ($users as $u) : ?>
+                                <option value="<?= $u->iduser ?>"><?= $u->full_name ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                         <!-- tempat bubble -->
                         <div id="picContainer" class="mb-3"></div>
                         <!-- hidden input untuk simpan id PIC -->
