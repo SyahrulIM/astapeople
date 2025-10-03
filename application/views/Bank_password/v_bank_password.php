@@ -530,6 +530,7 @@
                                 <option value="brevo">Brevo</option>
                                 <option value="cctv d9">CCTV D9</option>
                                 <option value="cctv d17">CCTV D17</option>
+                                <option value="pajak.io">Pajak.io</option>
                             </select>
                         </div>
                         <div class="mb-3">
