@@ -153,6 +153,34 @@ class Bank_password extends CI_Controller
         $devices = $this->db->get('ppl_devices');
         // End
 
+        // Start Devices Filter
+        $this->db->distinct();
+        $this->db->select('d.idppl_devices, d.devices');
+        $this->db->from('ppl_devices_bank_password dbp');
+        $this->db->join('ppl_devices d', 'dbp.idppl_devices = d.idppl_devices', 'left');
+        $this->db->join('ppl_bank_password bp', 'bp.idppl_bank_password = dbp.idppl_bank_password', 'left');
+        $this->db->where('d.devices IS NOT NULL', null, false);
+        $this->db->where('d.devices !=', '');
+        $this->db->where('bp.status', 1);
+
+        if ($filter_email) {
+            $this->db->where('bp.email', $filter_email);
+        }
+        if ($filter_account) {
+            $this->db->where('bp.account', $filter_account);
+        }
+        if ($filter_category) {
+            $this->db->where('bp.category', $filter_category);
+        }
+        if ($filter_verification) {
+            $this->db->where('bp.verification', $filter_verification);
+        }
+
+        $this->db->order_by('d.devices ASC');
+        $devices_filter = $this->db->get();
+        // End
+
+
         // Start hitung berapa filter aktif
         $active_filters = 0;
         if ($filter_account) $active_filters++;
@@ -179,6 +207,7 @@ class Bank_password extends CI_Controller
             'active_filters' => $active_filters,
             'users' => $this->db->get('user')->result(),
             'devices' => $devices->result(),
+            'devices_filter' => $devices_filter->result(),
         ];
 
         $this->load->view('theme/v_head', $data);

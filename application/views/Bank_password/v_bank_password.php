@@ -91,10 +91,13 @@
                             <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
                         </div>
                         <div class="col-12">
-                            <div style="border: none;border-top: 5px solid black;width: 68%;justify-self: center;"></div>
+                            <div style="border: none;border-top: 5px solid black;width: 76%;justify-self: center;"></div>
                         </div>
                     </div>
                     <div class="row">
+                        <div class="col" style="justify-items: center;">
+                            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+                        </div>
                         <div class="col" style="justify-items: center;">
                             <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
                         </div>
@@ -118,11 +121,19 @@
                         </div>
                         <div class="col" style="text-align: center;">
                             <span class="badge text-bg-primary fs-6">
+                                Devices
+                            </span>
+                        </div>
+                        <div class="col" style="text-align: center;">
+                            <span class="badge text-bg-primary fs-6">
                                 PIC
                             </span>
                         </div>
                     </div>
                     <div class="row">
+                        <div class="col" style="justify-items: center;">
+                            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+                        </div>
                         <div class="col" style="justify-items: center;">
                             <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
                         </div>
@@ -155,6 +166,18 @@
                                 <div class="col-6">
                                     <span class="badge text-bg-primary fs-6 mt-2 d-inline-block">
                                         <?php echo $keys->verification; ?>
+                                    </span>
+                                </div>
+                            </div>
+                            <?php } ?>
+                        </div>
+                        <div class="col">
+                            <?php foreach ($devices_filter as $keys) { ?>
+                            <div class="row">
+                                <div class="col-6"></div>
+                                <div class="col-6">
+                                    <span class="badge text-bg-primary fs-6 mt-2 d-inline-block">
+                                        <?php echo $keys->devices; ?>
                                     </span>
                                 </div>
                             </div>
@@ -196,10 +219,13 @@
                             <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
                         </div>
                         <div class="col-12">
-                            <div style="border: none;border-top: 5px solid black;width: 68%;justify-self: center;"></div>
+                            <div style="border: none;border-top: 5px solid black;width: 76%;justify-self: center;"></div>
                         </div>
                     </div>
                     <div class="row">
+                        <div class="col" style="justify-items: center;">
+                            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+                        </div>
                         <div class="col" style="justify-items: center;">
                             <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
                         </div>
@@ -223,11 +249,19 @@
                         </div>
                         <div class="col" style="text-align: center;">
                             <span class="badge text-bg-primary fs-6">
+                                Devices
+                            </span>
+                        </div>
+                        <div class="col" style="text-align: center;">
+                            <span class="badge text-bg-primary fs-6">
                                 PIC
                             </span>
                         </div>
                     </div>
                     <div class="row">
+                        <div class="col" style="justify-items: center;">
+                            <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
+                        </div>
                         <div class="col" style="justify-items: center;">
                             <div class="vertical" style="border-left: 5px solid black; height: 50px;"></div>
                         </div>
@@ -260,6 +294,18 @@
                                 <div class="col-6">
                                     <span class="badge text-bg-primary fs-6 mt-2 d-inline-block">
                                         <?php echo $keys->verification; ?>
+                                    </span>
+                                </div>
+                            </div>
+                            <?php } ?>
+                        </div>
+                        <div class="col">
+                            <?php foreach ($devices_filter as $keys) { ?>
+                            <div class="row">
+                                <div class="col-6"></div>
+                                <div class="col-6">
+                                    <span class="badge text-bg-primary fs-6 mt-2 d-inline-block">
+                                        <?php echo $keys->devices; ?>
                                     </span>
                                 </div>
                             </div>
@@ -368,7 +414,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Password</label>
-                            <input type="text" class="form-control" name="password" required>
+                            <input type="text" class="form-control" name="password">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Verifikasi</label>
@@ -376,7 +422,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Category</label>
-                            <select class="form-select" name="category" required>
+                            <select class="form-select" name="category">
                                 <option value="">-- Pilih Category --</option>
                                 <option value="other">Other</option>
                                 <option value="kotime">Kotime</option>
@@ -496,7 +542,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Password</label>
-                            <input type="text" class="form-control" id="editPassword" name="password" required>
+                            <input type="text" class="form-control" id="editPassword" name="password">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Verifikasi</label>
@@ -504,7 +550,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Category</label>
-                            <select class="form-select" id="editCategory" name="category" required>
+                            <select class="form-select" id="editCategory" name="category">
                                 <option value="">-- Pilih Category --</option>
                                 <option value="other">Other</option>
                                 <option value="kotime">Kotime</option>
