@@ -622,7 +622,7 @@
                     <tr data-id="<?php echo $vbp->idppl_bank_password; ?>">
                         <td><?php echo $no++; ?></td>
                         <td><?php echo ucfirst($vbp->account); ?></td>
-                        <td><?php echo $vbp->pic_names ? $vbp->pic_names : '-'; ?></td>
+                        <td><?php echo $vbp->role ? $vbp->role : '-'; ?></td>
                         <td><?php echo ucfirst($vbp->category); ?></td>
                         <td><?php echo $vbp->browser; ?></td>
                         <td><?php echo $vbp->email; ?></td>

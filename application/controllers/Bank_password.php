@@ -24,12 +24,14 @@ class Bank_password extends CI_Controller
         GROUP_CONCAT(DISTINCT u.full_name SEPARATOR ", ") as pic_names,
         GROUP_CONCAT(DISTINCT pic.iduser) as pic_ids,
         GROUP_CONCAT(DISTINCT d.devices SEPARATOR ", ") as device_names,
-        GROUP_CONCAT(DISTINCT d.idppl_devices) as device_ids');
+        GROUP_CONCAT(DISTINCT d.idppl_devices) as device_ids,
+        GROUP_CONCAT(DISTINCT r.nama_role SEPARATOR ", ") as role');
         $this->db->from('ppl_bank_password bp');
         $this->db->join('ppl_pic_bank_password pic', 'bp.idppl_bank_password = pic.idppl_bank_password', 'left');
         $this->db->join('user u', 'pic.iduser = u.iduser', 'left');
         $this->db->join('ppl_devices_bank_password dbp', 'bp.idppl_bank_password = dbp.idppl_bank_password', 'left');
         $this->db->join('ppl_devices d', 'dbp.idppl_devices = d.idppl_devices', 'left');
+        $this->db->join('role r', 'u.idrole = r.idrole', 'left');
         $this->db->where('bp.status', 1);
         if ($filter_account) {
             $this->db->where('bp.account', $filter_account);
@@ -188,10 +190,6 @@ class Bank_password extends CI_Controller
         if ($filter_email) $active_filters++;
         if ($filter_verification) $active_filters++;
         // End
-
-        // echo '<pre>';
-        // print_r($devices->result());
-        // die;
 
         $data = [
             'title' => 'Bank Password',
