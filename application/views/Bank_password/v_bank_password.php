@@ -184,12 +184,12 @@
                             <?php } ?>
                         </div>
                         <div class="col">
-                            <?php foreach ($pic_filter as $keys) { ?>
+                            <?php foreach ($role_filter as $keys) { ?>
                             <div class="row">
                                 <div class="col-6"></div>
                                 <div class="col-6">
                                     <span class="badge text-bg-primary fs-6 mt-2 d-inline-block">
-                                        <?php echo $keys->full_name; ?>
+                                        <?php echo $keys->nama_role; ?>
                                     </span>
                                 </div>
                             </div>
@@ -312,12 +312,12 @@
                             <?php } ?>
                         </div>
                         <div class="col">
-                            <?php foreach ($pic_filter as $keys) { ?>
+                            <?php foreach ($role_filter as $keys) { ?>
                             <div class="row">
                                 <div class="col-6"></div>
                                 <div class="col-6">
                                     <span class="badge text-bg-primary fs-6 mt-2 d-inline-block">
-                                        <?php echo $keys->full_name; ?>
+                                        <?php echo $keys->nama_role; ?>
                                     </span>
                                 </div>
                             </div>

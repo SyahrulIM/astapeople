@@ -151,6 +151,25 @@ class Bank_password extends CI_Controller
         $pic_filter = $this->db->get();
         // End
 
+        // Start Role Filter
+        $this->db->distinct();
+        $this->db->select('r.idrole, r.nama_role');
+        $this->db->from('ppl_pic_bank_password pic');
+        $this->db->join('user u', 'pic.iduser = u.iduser', 'left');
+        $this->db->join('ppl_bank_password bp', 'bp.idppl_bank_password = pic.idppl_bank_password', 'left');
+        $this->db->join('role r', 'u.idrole = r.idrole', 'left');
+        $this->db->where('bp.status', 1);
+        $this->db->where('r.status', 1);
+        if ($filter_email) {
+            $this->db->where('bp.email', $filter_email);
+        }
+        if ($filter_account) {
+            $this->db->where('bp.account', $filter_account);
+        }
+        $this->db->order_by('r.nama_role ASC');
+        $role_filter = $this->db->get();
+        // End
+
         // Start devices
         $devices = $this->db->get('ppl_devices');
         // End
@@ -201,7 +220,7 @@ class Bank_password extends CI_Controller
             'email_filter' => $email_filter->result(),
             'verification' => $verification->result(),
             'verification_filter' => $verification_filter->result(),
-            'pic_filter' => $pic_filter->result(),
+            'role_filter' => $role_filter->result(),
             'active_filters' => $active_filters,
             'users' => $this->db->get('user')->result(),
             'devices' => $devices->result(),
