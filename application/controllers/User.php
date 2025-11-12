@@ -42,11 +42,19 @@ class User extends CI_Controller
         $email = $this->input->post('inputEmail');
         $password = $this->input->post('inputPassword');
         $idrole = $this->input->post('inputRole');
+        $handphone = $this->input->post('inputHandphone');
+        $is_whatsapp = $this->input->post('inputWhatsapp');
 
-        // Cek apakah username sudah dipakai
         $cekUsername = $this->db->get_where('user', ['username' => $username])->row();
-        if ($cekUsername) {
-            $this->session->set_flashdata('error', 'Username sudah dipakai, silakan gunakan yang lain.');
+        if ($cekUsername && $cekUsername->status == 1) {
+            $this->session->set_flashdata('error', 'Username sudah dipakai oleh user aktif, silakan gunakan yang lain.');
+            redirect('user');
+            return;
+        }
+
+        $cekEmail = $this->db->get_where('user', ['email' => $email])->row();
+        if ($cekEmail && $cekEmail->status == 1) {
+            $this->session->set_flashdata('error', 'Email sudah dipakai oleh user aktif, silakan gunakan yang lain.');
             redirect('user');
             return;
         }
@@ -74,6 +82,8 @@ class User extends CI_Controller
             'password' => password_hash($password, PASSWORD_DEFAULT),
             'foto' => $foto,
             'idrole' => $idrole,
+            'handphone' => $handphone,
+            'is_whatsapp' => $is_whatsapp,
             'created_by' => $this->session->userdata('username'),
             'created_date' => date("Y-m-d H:i:s"),
             'updated_by' => $this->session->userdata('username'),
@@ -94,6 +104,8 @@ class User extends CI_Controller
         $email = $this->input->post('editEmail');
         $password = $this->input->post('editPassword');
         $idrole = $this->input->post('editRole');
+        $handphone = $this->input->post('editHandphone');
+        $is_whatsapp = $this->input->post('inputWhatsapp');
 
         // Ambil data user lama
         $oldUser = $this->db->get_where('user', ['username' => $username])->row();
@@ -108,10 +120,11 @@ class User extends CI_Controller
         $cekUsername = $this->db
             ->where('username', $username)
             ->where('iduser !=', $userId)
+            ->where('status', 1) // hanya cek ke user yang aktif
             ->get('user')
             ->row();
         if ($cekUsername) {
-            $this->session->set_flashdata('error', 'Username sudah dipakai oleh user lain.');
+            $this->session->set_flashdata('error', 'Username sudah dipakai oleh user aktif lain.');
             redirect('user');
             return;
         }
@@ -149,6 +162,8 @@ class User extends CI_Controller
             'password' => $hashedPassword,
             'foto' => $foto,
             'idrole' => $idrole,
+            'handphone' => $handphone,
+            'is_whatsapp' => $is_whatsapp,
             'updated_by' => $this->session->userdata('username'),
             'updated_date' => date("Y-m-d H:i:s")
         ];
