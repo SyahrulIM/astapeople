@@ -90,6 +90,7 @@
                 <!-- Modal Edit Pengguna -->
                 <div class="modal fade" id="editUser" tabindex="-1" aria-labelledby="editUserLabel" aria-hidden="true">
                     <form method="post" action="<?php echo base_url('user/editUser') ?>" enctype="multipart/form-data">
+                        <input type="hidden" name="editIdUser" id="editIdUser">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -106,11 +107,11 @@
                                         <input type="text" class="form-control" id="editUsername" name="editUsername" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="editEmail">Email</label>
+                                        <label for="editEmail" class="form-label">Email</label>
                                         <input type="text" class="form-control" id="editEmail" name="editEmail" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="editHandphone">Handphone</label>
+                                        <label for="editHandphone" class="form-label">Handphone</label>
                                         <input type="text" class="form-control" id="editHandphone" name="editHandphone" required>
                                     </div>
                                     <div class="mb-3">
@@ -118,7 +119,7 @@
                                         <input type="password" class="form-control" id="editPassword" name="editPassword">
                                     </div>
                                     <div class="mb-3">
-                                        <label for="editFoto">Foto</label>
+                                        <label for="editFoto" class="form-label">Foto</label>
                                         <input type="file" class="form-control" id="editFoto" name="editFoto" accept="image/*">
                                     </div>
                                     <div class="mb-3">
@@ -130,10 +131,10 @@
                                         </select>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="editRole" class="form-label">System Notification</label>
+                                        <label for="editWhatsapp" class="form-label">System Notification</label>
                                         <div class="form-check form-switch">
-                                            <input type="hidden" name="inputWhatsapp" value="0">
-                                            <input class="form-check-input" type="checkbox" role="switch" id="editWhatsapp" name="inputWhatsapp" value="1">
+                                            <input type="hidden" name="editWhatsapp" value="0">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="editWhatsapp" name="editWhatsapp" value="1">
                                             <label class="form-check-label" for="editWhatsapp">Notification Whatsapp</label>
                                         </div>
                                     </div>
@@ -200,14 +201,14 @@
                                     <td><span class="badge rounded-pill text-bg-danger">OFF</span></td>
                                     <?php } ?>
                                     <td>
-                                        <button type="button" class="btn btn-warning btnEditUser" data-full_name="<?= $uvalue->full_name ?>" data-username="<?= $uvalue->username ?>" data-email="<?= $uvalue->email ?>" data-foto="<?= $uvalue->foto ?>" data-idrole="<?= $uvalue->idrole ?>" data-handphone="<?= $uvalue->handphone ?>" data-is_whatsapp="<?= $uvalue->is_whatsapp ?>" data-bs-toggle="modal" data-bs-target="#editUser">
+                                        <button type="button" class="btn btn-warning btnEditUser" data-iduser="<?= $uvalue->iduser ?>" data-full_name="<?= $uvalue->full_name ?>" data-username="<?= $uvalue->username ?>" data-email="<?= $uvalue->email ?>" data-foto="<?= $uvalue->foto ?>" data-idrole="<?= $uvalue->idrole ?>" data-handphone="<?= $uvalue->handphone ?>" data-is_whatsapp="<?= $uvalue->is_whatsapp ?>" data-bs-toggle="modal" data-bs-target="#editUser">
                                             <i class="fa fa-edit"></i> Edit
                                         </button>
                                         <button type="button" class="btn btn-danger btnDeleteUser" data-iduser="<?= $uvalue->iduser ?>" data-full_name="<?= $uvalue->full_name ?>" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
                                             <i class="fa-solid fa-trash-can"></i> Hapus
                                         </button>
                                         <a href="<?php echo base_url('user/exportUserPdf?iduser=' . $uvalue->iduser); ?>">
-                                            <button type="button" class="btn btn-success" data-full_name="<?= $uvalue->full_name ?>" data-username="<?= $uvalue->username ?>" data-email="<?= $uvalue->email ?>" data-foto="<?= $uvalue->foto ?>" data-idrole="<?= $uvalue->idrole ?>" data-bs-toggle="modal" data-bs-target="#editUser">
+                                            <button type="button" class="btn btn-success">
                                                 <i class="fa fa-edit"></i> File Pengguna PDF
                                             </button>
                                         </a>
@@ -272,6 +273,7 @@
 
                     editButtons.forEach(button => {
                         button.addEventListener('click', function() {
+                            const iduser = this.getAttribute('data-iduser');
                             const full_name = this.getAttribute('data-full_name');
                             const username = this.getAttribute('data-username');
                             const email = this.getAttribute('data-email');
@@ -280,25 +282,23 @@
                             const handphone = this.getAttribute('data-handphone');
                             const is_whatsapp = this.getAttribute('data-is_whatsapp');
 
+                            // Set data ke input modal edit
+                            document.getElementById('editIdUser').value = iduser;
                             document.getElementById('editNamaLengkap').value = full_name;
                             document.getElementById('editUsername').value = username;
                             document.getElementById('editEmail').value = email;
                             document.getElementById('editHandphone').value = handphone;
                             document.getElementById('editFoto').value = '';
 
-                            // Set role
+                            // Set Role
                             const selectRole = document.getElementById('editRole');
                             Array.from(selectRole.options).forEach(option => {
                                 option.selected = (option.value === idrole);
                             });
 
-                            // Set WhatsApp toggle
+                            // Set Whatsapp ON/OFF
                             const checkbox = document.getElementById('editWhatsapp');
-                            if (is_whatsapp === '1') {
-                                checkbox.checked = true;
-                            } else {
-                                checkbox.checked = false;
-                            }
+                            checkbox.checked = (is_whatsapp === '1');
                         });
                     });
                 });

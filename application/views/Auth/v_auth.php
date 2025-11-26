@@ -5,6 +5,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Asta People - Login</title>
+  <!-- Meta Tag -->
+  <meta name="description" content="Dashboard People Management System Asta Homeware.">
+  <meta name="keywords" content="Asta, People, HR, Dashboard, Karyawan">
+  <meta name="robots" content="index, follow">
   <link rel="stylesheet" href="https://unpkg.com/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="<?php echo base_url('assets/image/favicon.ico'); ?>">
@@ -72,7 +76,7 @@
                     </span>
 
                     <!-- input password -->
-                    <input type="password" class="form-control" name="password" id="password" required>
+                    <input type="password" class="form-control" name="password" id="password">
 
                     <!-- tombol eye -->
                     <button class="btn btn-outline-secondary" type="button" id="togglePassword">

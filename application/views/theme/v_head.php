@@ -7,6 +7,10 @@
     <meta name="description" content="" />
     <meta name="author" content="" />
     <title>Asta People - <?php echo $title; ?></title>
+    <!-- Meta Tag -->
+    <meta name="description" content="Dashboard People Management System Asta Homeware.">
+    <meta name="keywords" content="Asta, People, HR, Dashboard, Karyawan">
+    <meta name="robots" content="index, follow">
     <!-- Core theme CSS (includes Bootstrap)-->
     <link href="<?php echo base_url(); ?>css/styles.css" rel="stylesheet" />
     <!-- DataTable CSS -->
@@ -56,7 +60,6 @@
         </div>
         <!-- Page content wrapper-->
         <div id="page-content-wrapper">
-
             <!-- Start Modal Change Username -->
             <div class="modal fade" id="changeUsernameModal" tabindex="-1" aria-labelledby="changeUsernameModalLabel" aria-hidden="true">
                 <div class="modal-dialog">

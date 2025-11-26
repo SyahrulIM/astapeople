@@ -358,6 +358,7 @@
                             <label class="form-label">Account</label>
                             <select class="form-select" name="account" required>
                                 <option value="">-- Pilih Account --</option>
+                                <option value="alfamart">Alfamart</option>
                                 <option value="gmail">Gmail</option>
                                 <option value="tokopedia">Tokopedia</option>
                                 <option value="shopee">Shopee</option>
@@ -487,6 +488,7 @@
                             <label class="form-label">Account</label>
                             <select class="form-select" id="editAccount" name="account" required>
                                 <option value="">-- Pilih Account --</option>
+                                <option value="alfamart">Alfamart</option>
                                 <option value="gmail">Gmail</option>
                                 <option value="tokopedia">Tokopedia</option>
                                 <option value="shopee">Shopee</option>

@@ -4,17 +4,16 @@ defined('BASEPATH') or exit('No direct script access allowed');
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Dompdf\Dompdf;
+use PhpOffice\PhpSpreadsheet\Worksheet\Row;
 
 class User extends CI_Controller
 {
     public function __construct()
     {
         parent::__construct();
-        // Check if the user is logged in
         if (!$this->session->userdata('logged_in')) {
-            // Redirect to login with a message
             $this->session->set_flashdata('error', 'Eeettss gak boleh nakal, Login dulu ya kak hehe.');
-            redirect('auth');  // Assuming 'auth' is your login controller
+            redirect('auth');
         }
     }
 
@@ -99,6 +98,7 @@ class User extends CI_Controller
     {
         $this->load->library('upload');
 
+        $iduser = $this->input->post('editIdUser');
         $namaLengkap = $this->input->post('editNamaLengkap');
         $username = $this->input->post('editUsername');
         $email = $this->input->post('editEmail');
@@ -108,17 +108,12 @@ class User extends CI_Controller
         $is_whatsapp = $this->input->post('inputWhatsapp');
 
         // Ambil data user lama
-        $oldUser = $this->db->get_where('user', ['username' => $username])->row();
-        if (!$oldUser) {
-            $this->session->set_flashdata('error', 'User tidak ditemukan.');
-            redirect('user');
-            return;
-        }
+        $this->db->where('iduser', $iduser);
+        $oldUser = $this->db->get('user');
+        $userId = $oldUser->row()->iduser;
 
-        // Validasi jika username diubah, tidak boleh sama dengan user lain
-        $userId = $oldUser->iduser;
         $cekUsername = $this->db
-            ->where('username', $username)
+            ->where('username',  $username)
             ->where('iduser !=', $userId)
             ->where('status', 1) // hanya cek ke user yang aktif
             ->get('user')
@@ -130,7 +125,7 @@ class User extends CI_Controller
         }
 
         // Foto
-        $foto = $oldUser->foto;
+        $foto = $oldUser->row()->foto;
         if (!empty($_FILES['editFoto']['name'])) {
             $config['upload_path'] = './assets/image/user/';
             $config['allowed_types'] = 'jpg|jpeg|png';
@@ -150,7 +145,7 @@ class User extends CI_Controller
         }
 
         // Password: hanya diubah jika ada input baru
-        $hashedPassword = $oldUser->password;
+        $hashedPassword = $oldUser->row()->password;
         if (!empty($password)) {
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         }
