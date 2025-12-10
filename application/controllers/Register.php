@@ -38,7 +38,7 @@ class Register extends CI_Controller
         $target = $handphone;
 
         if (!empty($target)) {
-            $token = 'EyuhsmTqzeKaDknoxdxt';
+            $token = 'F9C6K2!5QYkZtW7j5z#M';
             $message = 'Registrasi anda berhasil. Tunggu verifikasi dari admin maksimal 1x24 Jam.';
 
             $curl = curl_init();
@@ -75,7 +75,7 @@ class Register extends CI_Controller
         $target = count($targets) > 1 ? implode(',', $targets) : (count($targets) === 1 ? $targets[0] : '');
 
         if ($target !== '') {
-            $token = 'EyuhsmTqzeKaDknoxdxt';
+            $token = 'F9C6K2!5QYkZtW7j5z#M';
             $message = 'Akun dengan Username: ' . $username . ', Email: ' . $email . ', dan No.Handphone: ' . $handphone . ' membutuhkan Verifikasi dari superadmin di Asta People. Mohon segera diproses, terima kasih.';
 
             $curl = curl_init();

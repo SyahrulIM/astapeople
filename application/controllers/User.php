@@ -195,7 +195,7 @@ class User extends CI_Controller
                 $target = $user->handphone;
 
                 if (!empty($target)) {
-                    $token = 'EyuhsmTqzeKaDknoxdxt';
+                    $token = 'F9C6K2!5QYkZtW7j5z#M';
                     $message = 'Selamat, ' . $user->full_name . '! 🎉 Kamu sudah diverifikasi dan sekarang bisa akses Asta People.';
 
                     $curl = curl_init();
