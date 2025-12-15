@@ -20,7 +20,7 @@
                     <label for="absensi_end" class="form-label">Attendance Date (End)</label>
                     <input type="date" id="absensi_end" name="absensi_end" class="form-control" value="<?= $this->input->get('absensi_end') ?>" required>
                 </div>
-                <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 6) : ?>
+                <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 5) : ?>
                 <div class="col-md-3">
                     <label for="employee" class="form-label">Employee</label>
                     <select name="employee" id="employee" class="form-select">
@@ -145,7 +145,7 @@
                         <th>Reason</th>
                         <th>Status</th>
                         <th>Status Edit</th>
-                        <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 6) { ?>
+                        <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 5) { ?>
                         <td>Action</td>
                         <?php } ?>
                     </tr>
@@ -232,7 +232,7 @@
                             <span class="badge bg-success">Tidak Diedit</span>
                             <?php } ?>
                         </td>
-                        <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 6) { ?>
+                        <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 5) { ?>
                         <td>
                             <button type="button" class="btn btn-warning btn-edit" data-employee-id="<?= $row->idppl_employee ?>" data-date="<?= $date ?>" data-reason="<?= $reason ?>">
                                 Edit Absensi

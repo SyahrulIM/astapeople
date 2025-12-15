@@ -16,7 +16,7 @@ class Time_off extends CI_Controller
 
     public function index()
     {
-        if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 6) {
+        if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 5) {
             $data_time_off = $this->db
                 ->select('user.full_name as full_name,
                       ppl_time_off.date as date,
