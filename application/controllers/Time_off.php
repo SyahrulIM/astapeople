@@ -6,11 +6,9 @@ class Time_off extends CI_Controller
     public function __construct()
     {
         parent::__construct();
-        // Check if the user is logged in
         if (!$this->session->userdata('logged_in')) {
-            // Redirect to login with a message
             $this->session->set_flashdata('error', 'Eeettss gak boleh nakal, Login dulu ya kak hehe.');
-            redirect('auth');  // Assuming 'auth' is your login controller
+            redirect('auth');
         }
     }
 
@@ -55,6 +53,7 @@ class Time_off extends CI_Controller
     {
         $reason = $this->input->post('reason');
         $date_request = $this->input->post('dateRequest');
+        $description = $this->input->post('description');
         $iduser = $this->session->userdata('iduser');
 
         $data_exist = $this->db
@@ -70,6 +69,7 @@ class Time_off extends CI_Controller
                 'iduser' => $iduser,
                 'reason' => $reason,
                 'date' => $date_request,
+                'description' => $description,
                 'is_verify' => 0,
                 'status' => 1
             ];
@@ -85,7 +85,7 @@ class Time_off extends CI_Controller
         // Start Kirim pesan WhatsApp via Fonnte
         $this->db->select('handphone');
         $this->db->from('user');
-        $this->db->where_in('idrole', [1, 6]);
+        $this->db->where_in('idrole', [1, 5]);
         $this->db->where('is_whatsapp', 1);
         $this->db->where('status', 1);
         $this->db->where('handphone IS NOT NULL', null, false);
@@ -100,7 +100,8 @@ class Time_off extends CI_Controller
             $message = "📢 Pemberitahuan Izin Baru\n\n"
                 . "👤 Username: {$user->username}\n"
                 . "📅 Tanggal: {$date_request}\n"
-                . "📝 Alasan: {$reason}\n\n"
+                . "📝 Alasan: {$reason}\n"
+                . "📋 Deskripsi: {$description}\n\n"
                 . "Telah ditambahkan, Butuh diverifikasi. Terima kasih 🙏";
 
             $curl = curl_init();

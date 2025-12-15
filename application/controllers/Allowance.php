@@ -46,7 +46,7 @@ class Allowance extends CI_Controller
             $params = [$start, $end];
 
             // hanya filter kalau bukan admin (idrole=1) dan bukan role 6
-            if ($idrole != 1 && $idrole != 6) {
+            if ($idrole != 1 && $idrole != 5) {
                 $sql .= " AND e.iduser = ? ";
                 $params[] = $iduser;
             }

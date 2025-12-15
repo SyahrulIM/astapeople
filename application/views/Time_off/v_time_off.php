@@ -52,6 +52,10 @@
                                         <label for="dateRequest" class="form-label">Tanggal diajukan</label>
                                         <input type="date" class="form-control" id="dateRequest" name="dateRequest" min="<?= date('Y-m-d') ?>" required>
                                     </div>
+                                    <div class="mb-3">
+                                        <label for="dateRequest" class="form-label">Keterangan</label>
+                                        <textarea class="form-control" name="description" id="description"></textarea>
+                                    </div>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="submit" class="btn btn-primary">Save changes</button>

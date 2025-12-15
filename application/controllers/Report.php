@@ -27,7 +27,7 @@ class Report extends CI_Controller
 
         // Tentukan employee filter
         $filter_employee = null;
-        if (in_array($idrole, [1, 6])) {
+        if (in_array($idrole, [1, 5])) {
             if (!empty($this->input->get('employee'))) {
                 $filter_employee = $this->input->get('employee'); // filter employee tertentu
             } else {
@@ -80,7 +80,7 @@ class Report extends CI_Controller
 
         // Total employees (untuk deteksi libur nasional)
         $total_employees = $this->db->count_all('ppl_employee');
-        if (!empty($filter_employee) && !in_array($idrole, [1, 6])) {
+        if (!empty($filter_employee) && !in_array($idrole, [1, 5])) {
             $total_employees = 1; // non admin hanya 1 orang
         }
 
