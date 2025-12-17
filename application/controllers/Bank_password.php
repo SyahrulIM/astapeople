@@ -201,7 +201,6 @@ class Bank_password extends CI_Controller
         $devices_filter = $this->db->get();
         // End
 
-
         // Start hitung berapa filter aktif
         $active_filters = 0;
         if ($filter_account) $active_filters++;

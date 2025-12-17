@@ -401,8 +401,8 @@
                                 <option value="olx">OLX</option>
                                 <option value="xendit">Xendit</option>
                                 <option value="brevo">Brevo</option>
-                                <option value="cctv d9">CCTV D9</option>
-                                <option value="cctv d17">CCTV D17</option>
+                                <option value="d9">Gudang D9</option>
+                                <option value="d17">Gudang D17</option>
                                 <option value="pajak.io">Pajak.io</option>
                             </select>
                         </div>
@@ -531,8 +531,8 @@
                                 <option value="olx">OLX</option>
                                 <option value="xendit">Xendit</option>
                                 <option value="brevo">Brevo</option>
-                                <option value="cctv d9">CCTV D9</option>
-                                <option value="cctv d17">CCTV D17</option>
+                                <option value="d9">Gudang D9</option>
+                                <option value="d17">Gudang D17</option>
                                 <option value="pajak.io">Pajak.io</option>
                             </select>
                         </div>
