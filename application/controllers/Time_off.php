@@ -96,7 +96,7 @@ class Time_off extends CI_Controller
         $target = count($targets) > 1 ? implode(',', $targets) : (count($targets) === 1 ? $targets[0] : '');
 
         if ($target !== '') {
-            $token = 'F9C6K2!5QYkZtW7j5z#M';
+            $token = 'ZsZ2Dp71dyKrgz3YAQKg';
             $message = "📢 Pemberitahuan Izin Baru\n\n"
                 . "👤 Username: {$user->username}\n"
                 . "📅 Tanggal: {$date_request}\n"
