@@ -25,36 +25,183 @@
     <link rel="icon" type="image/x-icon" href="<?php echo base_url('assets/image/favicon.ico'); ?>">
     <!-- Barcode  -->
     <script src="https://unpkg.com/bwip-js/dist/bwip-js-min.js"></script>
+
+    <!-- Custom CSS untuk tema biru dongker -->
+    <style>
+        /* Warna tema biru dongker */
+        :root {
+            --primary-dark: #0d1b2a;
+            /* Biru dongker gelap */
+            --primary-blue: #1b263b;
+            /* Biru dongker medium */
+            --primary-light: #415a77;
+            /* Biru dongker terang */
+            --accent-blue: #778da9;
+            /* Biru aksen */
+            --light-bg: #f8f9fa;
+            /* Background terang */
+        }
+
+        /* Sidebar - Biru Dongker */
+        #sidebar-wrapper {
+            background-color: var(--primary-dark) !important;
+            border-color: var(--primary-blue) !important;
+        }
+
+        .sidebar-heading {
+            background-color: var(--primary-blue) !important;
+            color: white !important;
+            border-bottom: 1px solid var(--primary-light) !important;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        /* Menu items */
+        .list-group-item {
+            background-color: var(--primary-dark) !important;
+            color: #e0e0e0 !important;
+            border-color: var(--primary-blue) !important;
+            transition: all 0.3s ease;
+        }
+
+        .list-group-item:hover {
+            background-color: var(--primary-blue) !important;
+            color: white !important;
+        }
+
+        .list-group-item.active {
+            background-color: var(--accent-blue) !important;
+            color: white !important;
+            border-color: var(--accent-blue) !important;
+            font-weight: 500;
+        }
+
+        /* Submenu items */
+        .list-group-item-light {
+            background-color: var(--primary-blue) !important;
+            color: #d0d0d0 !important;
+        }
+
+        .list-group-item-light:hover {
+            background-color: var(--primary-light) !important;
+            color: white !important;
+        }
+
+        /* Icons */
+        .list-group-item i {
+            color: var(--accent-blue);
+            margin-right: 10px;
+        }
+
+        .list-group-item.active i,
+        .list-group-item:hover i {
+            color: white;
+        }
+
+        /* Top Navbar - Putih */
+        .navbar.bg-light {
+            background-color: white !important;
+            border-bottom: 2px solid var(--accent-blue) !important;
+        }
+
+        /* User dropdown */
+        .nav-link.dropdown-toggle {
+            color: var(--primary-dark) !important;
+            font-weight: 500;
+        }
+
+        .nav-link.dropdown-toggle:hover {
+            color: var(--primary-blue) !important;
+        }
+
+        /* Dropdown menu */
+        .dropdown-menu {
+            border: 1px solid var(--accent-blue);
+            box-shadow: 0 4px 12px rgba(13, 27, 42, 0.1);
+        }
+
+        .dropdown-item {
+            color: var(--primary-dark);
+        }
+
+        .dropdown-item:hover {
+            background-color: #f0f4f8;
+            color: var(--primary-blue);
+        }
+
+        /* Button sidebar toggle */
+        #sidebarToggle {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: white;
+        }
+
+        #sidebarToggle:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary-light);
+        }
+
+        /* Modal styling */
+        .modal-header {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary-light);
+        }
+
+        /* Logo styling */
+        .sidebar-heading img {
+            filter: brightness(0) invert(1);
+            margin-right: 8px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            #sidebar-wrapper {
+                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            }
+        }
+    </style>
 </head>
 
 <body>
     <div class="d-flex" id="wrapper">
         <!-- Sidebar-->
-        <div class="border-end bg-white" id="sidebar-wrapper">
-            <div class="sidebar-heading border-bottom bg-light text-center"><img src="<?php echo base_url('assets/image/logo A asta biru.png') ?>" alt="Asta Logo" width="20px"> People</div>
+        <div class="border-end" id="sidebar-wrapper">
+            <div class="sidebar-heading border-bottom text-center">
+                <img src="<?php echo base_url('assets/image/logo A asta biru.png') ?>" alt="Asta Logo" width="20px"> People
+            </div>
             <?php
             $current = $this->uri->segment(1);
             ?>
             <div class="list-group list-group-flush">
                 <div class="list-group-item p-0">
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3 d-flex justify-content-between align-items-center <?= in_array($current, ['presence', 'report', 'allowance', 'time_off']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#dbpresenceSubmenu" role="button" aria-expanded="<?= in_array($current, ['presence', 'report', 'allowance', 'time_off']) ? 'true' : 'false'; ?>" aria-controls="dbpresenceSubmenu">
-                        Menu
+                    <a class="list-group-item list-group-item-action p-3 d-flex justify-content-between align-items-center <?= in_array($current, ['presence', 'report', 'allowance', 'time_off']) ? 'active' : ''; ?>" data-bs-toggle="collapse" href="#dbpresenceSubmenu" role="button" aria-expanded="<?= in_array($current, ['presence', 'report', 'allowance', 'time_off']) ? 'true' : 'false'; ?>" aria-controls="dbpresenceSubmenu">
+                        <i class="fa-solid fa-list"></i> Menu
                         <i class="fas fa-chevron-down small"></i>
                     </a>
                     <div class="collapse <?= in_array($current, ['presence', 'report', 'allowance', 'time_off', 'bank_password']) ? 'show' : ''; ?>" id="dbpresenceSubmenu">
                         <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 5) { ?>
-                        <a class="list-group-item list-group-item-action list-group-item-light ps-5 <?= ($current == 'presence') ? 'active' : ''; ?>" href="<?= base_url('presence'); ?>">Absensi</a>
+                        <a class="list-group-item list-group-item-action ps-5 <?= ($current == 'presence') ? 'active' : ''; ?>" href="<?= base_url('presence'); ?>"><i class="fa-solid fa-fingerprint"></i> Absensi</a>
                         <?php } ?>
-                        <a class="list-group-item list-group-item-action list-group-item-light ps-5 <?= ($current == 'report') ? 'active' : ''; ?>" href="<?= base_url('report'); ?>">Laporan</a>
-                        <a class="list-group-item list-group-item-action list-group-item-light ps-5 <?= ($current == 'allowance') ? 'active' : ''; ?>" href="<?= base_url('allowance'); ?>">Tunjangan</a>
-                        <a class="list-group-item list-group-item-action list-group-item-light ps-5 <?= ($current == 'time_off') ? 'active' : ''; ?>" href="<?= base_url('time_off'); ?>">Pengajuan Ijin</a>
+                        <a class="list-group-item list-group-item-action ps-5 <?= ($current == 'report') ? 'active' : ''; ?>" href="<?= base_url('report'); ?>"><i class="fa-solid fa-book-open"></i> Laporan</a>
+                        <a class="list-group-item list-group-item-action ps-5 <?= ($current == 'allowance') ? 'active' : ''; ?>" href="<?= base_url('allowance'); ?>"><i class="fa-solid fa-money-bill-wheat"></i> Tunjangan</a>
+                        <a class="list-group-item list-group-item-action ps-5 <?= ($current == 'time_off') ? 'active' : ''; ?>" href="<?= base_url('time_off'); ?>"><i class="fa-regular fa-calendar-days"></i> Pengajuan Ijin</a>
                         <?php if ($this->session->userdata('idrole') == 1) { ?>
-                        <a class="list-group-item list-group-item-action list-group-item-light ps-5 <?= ($current == 'bank_password') ? 'active' : ''; ?>" href="<?= base_url('bank_password'); ?>">Bank Password</a>
+                        <a class="list-group-item list-group-item-action ps-5 <?= ($current == 'bank_password') ? 'active' : ''; ?>" href="<?= base_url('bank_password'); ?>"><i class="fa-solid fa-lock"></i> Bank Password</a>
                         <?php } ?>
                     </div>
                 </div>
                 <?php if ($this->session->userdata('idrole') == 1) { ?>
-                <a class="list-group-item list-group-item-action list-group-item-light p-3 <?= ($current == 'user') ? 'active' : ''; ?>" href="<?php echo base_url('user/'); ?>">Pengguna</a>
+                <a class="list-group-item list-group-item-action p-3 <?= ($current == 'user') ? 'active' : ''; ?>" href="<?php echo base_url('user/'); ?>"><i class="fa-solid fa-users"></i> Pengguna</a>
                 <?php } ?>
             </div>
         </div>
@@ -90,7 +237,7 @@
                     <div class="modal-content">
                         <form action="<?= base_url('user/changePassword'); ?>" method="post" enctype="multipart/form-data">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="changePasswordModalLabel">Change Username</h5>
+                                <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body text-center">
@@ -147,7 +294,7 @@
             </div>
             <!-- End -->
             <!-- Top navigation-->
-            <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+            <nav class="navbar navbar-expand-lg navbar-light border-bottom">
                 <div class="container-fluid">
                     <button class="btn btn-primary d-inline d-xl-none" id="sidebarToggle">Menu</button>
                     <div class="navbar-nav ms-auto mt-2 mt-lg-0" id="navbarSupportedContent">
@@ -169,29 +316,51 @@
                 </div>
             </nav>
 
-            <script>
-                document.getElementById("fotoInput").addEventListener("change", function(event) {
-                    const [file] = event.target.files;
-                    if (file) {
-                        document.getElementById("previewFoto").src = URL.createObjectURL(file);
-                    }
-                });
+            <!-- Page content area -->
+            <div class="container-fluid" style="background-color: var(--light-bg); min-height: calc(100vh - 73px); padding: 20px;">
+                <!-- Content akan ditampilkan di sini -->
 
-                const togglePassword = document.querySelector('#togglePassword');
-                const passwordField = document.querySelector('#inputPassword');
-                const icon = togglePassword.querySelector('i');
+                <script>
+                    // Preview foto upload
+                    document.getElementById("fotoInput").addEventListener("change", function(event) {
+                        const [file] = event.target.files;
+                        if (file) {
+                            document.getElementById("previewFoto").src = URL.createObjectURL(file);
+                        }
+                    });
 
-                togglePassword.addEventListener('click', function() {
-                    const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
-                    passwordField.setAttribute('type', type);
+                    // Toggle password visibility
+                    const togglePassword = document.querySelector('#togglePassword');
+                    const passwordField = document.querySelector('#inputPassword');
+                    const icon = togglePassword.querySelector('i');
 
-                    // ganti icon
-                    if (type === 'password') {
-                        icon.classList.remove('bi-eye-slash');
-                        icon.classList.add('bi-eye');
-                    } else {
-                        icon.classList.remove('bi-eye');
-                        icon.classList.add('bi-eye-slash');
-                    }
-                });
-            </script>
+                    togglePassword.addEventListener('click', function() {
+                        const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                        passwordField.setAttribute('type', type);
+
+                        // ganti icon
+                        if (type === 'password') {
+                            icon.classList.remove('fa-eye-slash');
+                            icon.classList.add('fa-eye');
+                        } else {
+                            icon.classList.remove('fa-eye');
+                            icon.classList.add('fa-eye-slash');
+                        }
+                    });
+
+                    // Sidebar toggle
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const sidebarToggle = document.getElementById('sidebarToggle');
+                        const sidebarWrapper = document.getElementById('sidebar-wrapper');
+
+                        sidebarToggle.addEventListener('click', function() {
+                            sidebarWrapper.classList.toggle('toggled');
+                        });
+
+                        // Inisialisasi tooltips jika ada
+                        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                        tooltipTriggerList.map(function(tooltipTriggerEl) {
+                            return new bootstrap.Tooltip(tooltipTriggerEl);
+                        });
+                    });
+                </script>
