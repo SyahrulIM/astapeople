@@ -26,20 +26,14 @@
     <!-- Barcode  -->
     <script src="https://unpkg.com/bwip-js/dist/bwip-js-min.js"></script>
 
-    <!-- Custom CSS untuk tema biru dongker -->
     <style>
         /* Warna tema biru dongker */
         :root {
-            --primary-dark: #0d1b2a;
-            /* Biru dongker gelap */
-            --primary-blue: #1b263b;
-            /* Biru dongker medium */
-            --primary-light: #415a77;
-            /* Biru dongker terang */
-            --accent-blue: #778da9;
-            /* Biru aksen */
-            --light-bg: #f8f9fa;
-            /* Background terang */
+            --primary-dark: #21488a;
+            --primary-blue: #21488a;
+            --primary-light: #0D6EFD;
+            --accent-blue: #0D6EFD;
+            --light-bg: #FFFFFF;
         }
 
         /* Sidebar - Biru Dongker */
@@ -56,10 +50,10 @@
             font-size: 1.2rem;
         }
 
-        /* Menu items */
+        /* Menu items - SEMUA TEKS PUTIH */
         .list-group-item {
             background-color: var(--primary-dark) !important;
-            color: #e0e0e0 !important;
+            color: white !important;
             border-color: var(--primary-blue) !important;
             transition: all 0.3s ease;
         }
@@ -76,10 +70,10 @@
             font-weight: 500;
         }
 
-        /* Submenu items */
+        /* Submenu items - SEMUA TEKS PUTIH */
         .list-group-item-light {
             background-color: var(--primary-blue) !important;
-            color: #d0d0d0 !important;
+            color: white !important;
         }
 
         .list-group-item-light:hover {
@@ -87,15 +81,20 @@
             color: white !important;
         }
 
-        /* Icons */
-        .list-group-item i {
-            color: var(--accent-blue);
+        /* Icons di sidebar - SEMUA PUTIH */
+        #sidebar-wrapper .list-group-item i {
+            color: white !important;
             margin-right: 10px;
         }
 
-        .list-group-item.active i,
-        .list-group-item:hover i {
-            color: white;
+        #sidebar-wrapper .list-group-item.active i,
+        #sidebar-wrapper .list-group-item:hover i {
+            color: white !important;
+        }
+
+        /* Icon chevron dropdown */
+        #sidebar-wrapper .fas.fa-chevron-down {
+            color: white !important;
         }
 
         /* Top Navbar - Putih */
@@ -104,7 +103,7 @@
             border-bottom: 2px solid var(--accent-blue) !important;
         }
 
-        /* User dropdown */
+        /* User dropdown di navbar atas */
         .nav-link.dropdown-toggle {
             color: var(--primary-dark) !important;
             font-weight: 500;
@@ -168,6 +167,16 @@
             #sidebar-wrapper {
                 box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
             }
+        }
+
+        /* Pastikan semua teks di sidebar putih */
+        #sidebar-wrapper * {
+            color: white !important;
+        }
+
+        /* Kecuali untuk submenu yang sudah punya class sendiri */
+        #sidebar-wrapper .list-group-item-light {
+            color: white !important;
         }
     </style>
 </head>
@@ -301,7 +310,16 @@
                         <ul class="navbar-nav">
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <img src="<?php echo base_url('assets/image/user/' . $this->session->userdata('foto')); ?>" alt="" width="21px" height="21px" style="border-radius: 50%; object-fit: cover;">
+                                    <?php
+                                    $foto = $this->session->userdata('foto');
+                                    if (!empty($foto)) :
+                                        ?>
+                                    <img src="<?php echo base_url('assets/image/user/' . $foto); ?>" alt="User Photo" width="21px" height="21px" style="border-radius: 50%; object-fit: cover;">
+                                    <?php else : ?>
+                                    <div style="display: inline-block; width: 21px; height: 21px; border-radius: 50%; background-color: #e9ecef; text-align: center; line-height: 21px;">
+                                        <i class="fa-solid fa-user" style="font-size: 12px; color: #6c757d;"></i>
+                                    </div>
+                                    <?php endif; ?>
                                     <?php echo $this->session->userdata('username'); ?>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
