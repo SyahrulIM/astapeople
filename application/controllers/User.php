@@ -4,16 +4,17 @@ defined('BASEPATH') or exit('No direct script access allowed');
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Dompdf\Dompdf;
-use PhpOffice\PhpSpreadsheet\Worksheet\Row;
 
 class User extends CI_Controller
 {
     public function __construct()
     {
         parent::__construct();
+        // Check if the user is logged in
         if (!$this->session->userdata('logged_in')) {
+            // Redirect to login with a message
             $this->session->set_flashdata('error', 'Eeettss gak boleh nakal, Login dulu ya kak hehe.');
-            redirect('auth');
+            redirect('auth');  // Assuming 'auth' is your login controller
         }
     }
 
@@ -43,6 +44,7 @@ class User extends CI_Controller
         $idrole = $this->input->post('inputRole');
         $handphone = $this->input->post('inputHandphone');
         $is_whatsapp = $this->input->post('inputWhatsapp');
+        $birth_date = $this->input->post('inputBirthDate');
 
         $cekUsername = $this->db->get_where('user', ['username' => $username])->row();
         if ($cekUsername && $cekUsername->status == 1) {
@@ -82,7 +84,8 @@ class User extends CI_Controller
             'foto' => $foto,
             'idrole' => $idrole,
             'handphone' => $handphone,
-            'is_whatsapp' => $is_whatsapp,
+            'birth_date' => $birth_date ? date('Y-m-d', strtotime($birth_date)) : null,
+            'is_whatsapp' => $is_whatsapp ? 1 : 0,
             'created_by' => $this->session->userdata('username'),
             'created_date' => date("Y-m-d H:i:s"),
             'updated_by' => $this->session->userdata('username'),
@@ -105,16 +108,21 @@ class User extends CI_Controller
         $password = $this->input->post('editPassword');
         $idrole = $this->input->post('editRole');
         $handphone = $this->input->post('editHandphone');
-        $is_whatsapp = $this->input->post('inputWhatsapp');
+        $is_whatsapp = $this->input->post('editWhatsapp');
+        $birth_date = $this->input->post('editBirthDate');
 
         // Ambil data user lama
-        $this->db->where('iduser', $iduser);
-        $oldUser = $this->db->get('user');
-        $userId = $oldUser->row()->iduser;
+        $oldUser = $this->db->get_where('user', ['iduser' => $iduser])->row();
+        if (!$oldUser) {
+            $this->session->set_flashdata('error', 'User tidak ditemukan.');
+            redirect('user');
+            return;
+        }
 
+        // Validasi jika username diubah, tidak boleh sama dengan user lain
         $cekUsername = $this->db
             ->where('username',  $username)
-            ->where('iduser !=', $userId)
+            ->where('iduser !=', $iduser)
             ->where('status', 1) // hanya cek ke user yang aktif
             ->get('user')
             ->row();
@@ -124,8 +132,21 @@ class User extends CI_Controller
             return;
         }
 
+        // Validasi email jika diubah
+        $cekEmail = $this->db
+            ->where('email',  $email)
+            ->where('iduser !=', $iduser)
+            ->where('status', 1)
+            ->get('user')
+            ->row();
+        if ($cekEmail) {
+            $this->session->set_flashdata('error', 'Email sudah dipakai oleh user aktif lain.');
+            redirect('user');
+            return;
+        }
+
         // Foto
-        $foto = $oldUser->row()->foto;
+        $foto = $oldUser->foto;
         if (!empty($_FILES['editFoto']['name'])) {
             $config['upload_path'] = './assets/image/user/';
             $config['allowed_types'] = 'jpg|jpeg|png';
@@ -145,25 +166,26 @@ class User extends CI_Controller
         }
 
         // Password: hanya diubah jika ada input baru
-        $hashedPassword = $oldUser->row()->password;
+        $hashedPassword = $oldUser->password;
         if (!empty($password)) {
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         }
 
         $data = [
             'full_name' => $namaLengkap,
-            'username' => $username, // disimpan kembali, bisa jadi diubah
+            'username' => $username,
             'email' => $email,
             'password' => $hashedPassword,
             'foto' => $foto,
             'idrole' => $idrole,
             'handphone' => $handphone,
-            'is_whatsapp' => $is_whatsapp,
+            'birth_date' => $birth_date ? date('Y-m-d', strtotime($birth_date)) : null,
+            'is_whatsapp' => $is_whatsapp ? 1 : 0,
             'updated_by' => $this->session->userdata('username'),
             'updated_date' => date("Y-m-d H:i:s")
         ];
 
-        $this->db->where('iduser', $userId);
+        $this->db->where('iduser', $iduser);
         $this->db->update('user', $data);
 
         $this->session->set_flashdata('success', 'User berhasil diupdate.');
