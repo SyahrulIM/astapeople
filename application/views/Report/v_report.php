@@ -20,21 +20,21 @@
                     <label for="absensi_end" class="form-label">Attendance Date (End)</label>
                     <input type="date" id="absensi_end" name="absensi_end" class="form-control" value="<?= $this->input->get('absensi_end') ?>" required>
                 </div>
-                <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 5) : ?>
-                <div class="col-md-3">
-                    <label for="employee" class="form-label">Employee</label>
-                    <select name="employee" id="employee" class="form-select">
-                        <option value="">-- Select Employee --</option>
-                        <?php if (!empty($employee)) : ?>
-                        <?php foreach ($employee as $emp) : ?>
-                        <option value="<?= $emp->idppl_employee ?>" <?= ($this->input->get('employee') == $emp->idppl_employee) ? 'selected' : '' ?>>
-                            <?= $emp->name ?>
-                        </option>
-                        <?php endforeach; ?>
-                        <?php endif; ?>
-                    </select>
-                </div>
-                <?php endif; ?>
+<?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 5) : ?>
+<div class="col-md-3">
+    <label for="employee" class="form-label">Employee</label>
+    <select name="employee" id="employee" class="form-select">
+        <option value="">-- Select Employee --</option>
+        <?php if (!empty($employee)) : ?>
+            <?php foreach ($employee as $emp) : ?>
+                <option value="<?= $emp->name ?>" <?= ($this->input->get('employee') == $emp->name) ? 'selected' : '' ?>>
+                    <?= $emp->name ?> (<?= $emp->place ?>)
+                </option>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </select>
+</div>
+<?php endif; ?>
                 <div class="col-md-3 d-flex align-items-end">
                     <div>
                         <button type="submit" class="btn btn-primary me-2">Filter</button>
@@ -232,13 +232,13 @@
                             <span class="badge bg-success">Tidak Diedit</span>
                             <?php } ?>
                         </td>
-                        <?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 5) { ?>
-                        <td>
-                            <button type="button" class="btn btn-warning btn-edit" data-employee-id="<?= $row->idppl_employee ?>" data-date="<?= $date ?>" data-reason="<?= $reason ?>">
-                                Edit Absensi
-                            </button>
-                        </td>
-                        <?php } ?>
+<?php if ($this->session->userdata('idrole') == 1 || $this->session->userdata('idrole') == 5) { ?>
+<td>
+    <button type="button" class="btn btn-warning btn-edit" data-employee-name="<?= $row->name ?>" data-date="<?= $date ?>" data-place="<?= $row->place ?>">
+        Edit Absensi
+    </button>
+</td>
+<?php } ?>
                         </td>
                     </tr>
                     <?php } ?>
@@ -295,46 +295,58 @@
         });
     });
 
-    $(document).on("click", ".btn-edit", function() {
-        let employeeId = $(this).data("employee-id");
-        let date = $(this).data("date");
+$(document).on("click", ".btn-edit", function() {
+    let employeeName = $(this).data("employee-name");
+    let date = $(this).data("date");
+    let place = $(this).data("place");
 
-        $.ajax({
-            url: "<?= base_url('report/get_attendance_detail') ?>",
-            type: "POST",
-            dataType: "json",
-            data: {
-                employee_id: employeeId,
-                date: date
-            },
-            success: function(res) {
-                if (res.status === "success") {
-                    let data = res.data;
+    $.ajax({
+        url: "<?= base_url('report/get_attendance_detail') ?>",
+        type: "POST",
+        dataType: "json",
+        data: {
+            employee_name: employeeName,
+            date: date,
+            place: place
+        },
+        success: function(res) {
+            if (res.status === "success") {
+                let data = res.data;
 
-                    // isi detail info
-                    $("#detailEmployee").text(data.employee_name);
-                    $("#detailDate").text(data.date);
-                    $("#detailCheckIn").text(data.check_in || "-");
-                    $("#detailCheckOut").text(data.check_out || "-");
-                    $("#detailStatus").text(data.status || "-");
+                // isi detail info
+                $("#detailEmployee").text(data.employee_name + ' (' + data.place + ')');
+                $("#detailDate").text(data.date);
+                $("#detailCheckIn").text(data.check_in || "-");
+                $("#detailCheckOut").text(data.check_out || "-");
+                $("#detailStatus").text(data.status || "-");
 
-                    // isi input form
-                    $("#modalEmployeeId").val(employeeId);
-                    $("#modalDate").val(data.date);
-                    $("#time_start").val(data.check_in);
-                    $("#time_end").val(data.check_out);
-
-                    // buka modal
-                    $("#modalEdit").modal("show");
+                // isi input form
+                $("#modalEmployeeId").val(employeeName); // Change ID to name
+                $("#modalDate").val(data.date);
+                $("#time_start").val(data.check_in);
+                $("#time_end").val(data.check_out);
+                
+                // Add hidden input for place
+                if (!$('#modalPlace').length) {
+                    $('#permitForm').append('<input type="hidden" name="place" id="modalPlace" value="' + data.place + '">');
                 } else {
-                    alert(res.message);
+                    $('#modalPlace').val(data.place);
                 }
-            },
-            error: function() {
-                alert("Gagal ambil data. Coba lagi!");
+                
+                // Change hidden input name to employee_name
+                $('#modalEmployeeId').attr('name', 'employee_name');
+
+                // buka modal
+                $("#modalEdit").modal("show");
+            } else {
+                alert(res.message);
             }
-        });
+        },
+        error: function() {
+            alert("Gagal ambil data. Coba lagi!");
+        }
     });
+});
 
     $(document).on("submit", "#permitForm", function(e) {
         e.preventDefault();

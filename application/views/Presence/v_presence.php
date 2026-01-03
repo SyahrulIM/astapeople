@@ -19,7 +19,15 @@
 
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md mb-3">
+                                    <label for="place" class="form-label">Mesin Absensi:</label>
+                                    <select name="place" id="place" class="form-select" required>
+                                        <option disabled selected>-- Pilih --</option>
+                                        <option value="IV">IV</option>
+                                        <option value="Gudang">Gudang</option>
+                                    </select>
+                                </div>
+                                <div class="col-md mb-3">
                                     <label for="month" class="form-label">Select Month:</label>
                                     <select name="month" id="month" class="form-select" required>
                                         <?php
@@ -36,7 +44,7 @@
                                         ?>
                                     </select>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md mb-3">
                                     <label for="year" class="form-label">Select Year:</label>
                                     <select name="year" id="year" class="form-select" required>
                                         <?php
