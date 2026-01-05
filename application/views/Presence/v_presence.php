@@ -12,7 +12,10 @@
                             <strong>Import Absensi (xlsx)</strong>
                             <div>
                                 <a href="<?= base_url('assets\template_excel\absensi\1_StandardReport.xls') ?>" class="btn btn-sm btn-success me-2" download>
-                                    Download Template Absensi
+                                    Download Template Absensi IV
+                                </a>
+                                <a href="<?= base_url('assets\template_excel\absensi\12MON.xlsx') ?>" class="btn btn-sm btn-success me-2" download>
+                                    Download Template Absensi Gudang
                                 </a>
                             </div>
                         </div>

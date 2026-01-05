@@ -404,6 +404,7 @@
                                 <option value="gudang d9">Gudang D9</option>
                                 <option value="gudang d17">Gudang D17</option>
                                 <option value="pajak.io">Pajak.io</option>
+                                <option value="toko northwest">Toko Northwest</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -534,6 +535,7 @@
                                 <option value="gudang d9">Gudang D9</option>
                                 <option value="gudang d17">Gudang D17</option>
                                 <option value="pajak.io">Pajak.io</option>
+                                <option value="toko northwest">Toko Northwest</option>
                             </select>
                         </div>
                         <div class="mb-3">

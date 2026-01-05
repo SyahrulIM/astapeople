@@ -23,61 +23,120 @@ class Allowance extends CI_Controller
         $end   = $this->input->get('absensi_end');
         $idrole = $this->session->userdata('idrole');
         $iduser = $this->session->userdata('iduser');
+        $place_filter = $this->input->get('place'); // Optional place filter
 
         $data = [
             'title'   => 'Allowance',
             'start'   => $start,
             'end'     => $end,
+            'place_filter' => $place_filter,
             'results' => []
         ];
 
         if ($start && $end) {
-            $sql = "
-        SELECT 
-            e.idppl_employee, e.name, d.date, d.check_in, d.check_out, d.reason,
-            d.is_edit,
-            t.reason AS timeoff_reason, t.is_verify
+            // First, get all employees with place - ORDER BY name ASC
+            $sql_employees = "
+        SELECT e.idppl_employee, e.no_excel, e.name, e.iduser, e.place
         FROM ppl_employee e
-        LEFT JOIN ppl_presence_detail d ON e.idppl_employee = d.idppl_employee
-        LEFT JOIN ppl_time_off t ON e.iduser = t.iduser AND d.date = t.date
-        WHERE d.date BETWEEN ? AND ?
+        WHERE 1=1
         ";
 
-            $params = [$start, $end];
+            $params_employees = [];
 
-            // hanya filter kalau bukan admin (idrole=1) dan bukan role 6
+            // Filter by user if not admin
             if ($idrole != 1 && $idrole != 5) {
-                $sql .= " AND e.iduser = ? ";
-                $params[] = $iduser;
+                $sql_employees .= " AND e.iduser = ? ";
+                $params_employees[] = $iduser;
             }
 
-            $sql .= " ORDER BY e.name, d.date";
+            // Filter by place if selected
+            if ($place_filter && $place_filter != 'all') {
+                $sql_employees .= " AND e.place = ? ";
+                $params_employees[] = $place_filter;
+            }
 
-            $query = $this->db->query($sql, $params);
-            $rows = $query->result();
+            // ORDER BY name ASC - simple alphabetical sorting
+            $sql_employees .= " ORDER BY LOWER(e.name) ASC";
 
+            $query_employees = $this->db->query($sql_employees, $params_employees);
+            $employees = $query_employees->result();
+
+            // Initialize grouped array with all employees - maintain order
             $grouped = [];
+            foreach ($employees as $emp) {
+                $grouped[$emp->no_excel] = [
+                    'name'          => $emp->name,
+                    'place'         => $emp->place,
+                    'presence'      => [],
+                    'total_attend'  => 0,
+                    'total_meal'    => 0
+                ];
+            }
+
+            // Now get presence data for the date range
+            $sql_presence = "
+        SELECT 
+            e.no_excel, e.name, e.place,
+            d.date, d.check_in, d.check_out, d.reason, d.is_edit,
+            t.reason AS timeoff_reason, t.is_verify
+        FROM ppl_employee e
+        LEFT JOIN ppl_presence_detail d ON e.no_excel = d.no_excel 
+            AND d.date BETWEEN ? AND ?
+        LEFT JOIN ppl_time_off t ON e.iduser = t.iduser AND d.date = t.date
+        WHERE 1=1
+        ";
+
+            $params_presence = [$start, $end];
+
+            // Filter by user if not admin
+            if ($idrole != 1 && $idrole != 5) {
+                $sql_presence .= " AND e.iduser = ? ";
+                $params_presence[] = $iduser;
+            }
+
+            // Filter by place if selected
+            if ($place_filter && $place_filter != 'all') {
+                $sql_presence .= " AND e.place = ? ";
+                $params_presence[] = $place_filter;
+            }
+
+            // ORDER BY name ASC - simple alphabetical sorting
+            $sql_presence .= " ORDER BY LOWER(e.name) ASC, d.date";
+
+            $query_presence = $this->db->query($sql_presence, $params_presence);
+            $rows = $query_presence->result();
+
             $daily_status = []; // track unik per hari
 
-            foreach ($rows as $row) {
-                $id   = $row->idppl_employee;
-                $date = $row->date;
+            // Count total working days in the date range (Monday to Saturday)
+            $startDate = new DateTime($start);
+            $endDate = new DateTime($end);
+            $totalWorkingDays = 0;
 
-                if (!isset($grouped[$id])) {
-                    $grouped[$id] = [
-                        'name'          => $row->name,
-                        'presence'      => [],
-                        'total_attend'  => 0,
-                        'total_meal'    => 0
-                    ];
+            // Calculate working days for the period
+            for ($date = clone $startDate; $date <= $endDate; $date->modify('+1 day')) {
+                $dayOfWeek = $date->format('N'); // 1=Monday, 7=Sunday
+                if ($dayOfWeek >= 1 && $dayOfWeek <= 6) { // Monday to Saturday
+                    $totalWorkingDays++;
                 }
+            }
 
-                // skip kalau sudah dihitung untuk hari ini
-                if (isset($daily_status[$id][$date])) {
+            foreach ($rows as $row) {
+                $no_excel = $row->no_excel;
+                $date = $row->date;
+                $place = $row->place;
+
+                // Skip if no date (this happens for employees with no presence records)
+                if (!$date) {
                     continue;
                 }
 
-                $grouped[$id]['presence'][$date] = '-';
+                // skip kalau sudah dihitung untuk hari ini
+                if (isset($daily_status[$no_excel][$date])) {
+                    continue;
+                }
+
+                $grouped[$no_excel]['presence'][$date] = '-';
 
                 // --- Kasus: hadir absen ---
                 if ($row->check_in && $row->check_out) {
@@ -103,26 +162,31 @@ class Allowance extends CI_Controller
                             $check_symbol = '<span class="text-danger fw-bold">✓</span>';
                         }
 
-                        $grouped[$id]['presence'][$date] = $check_symbol;
+                        $grouped[$no_excel]['presence'][$date] = $check_symbol;
 
                         // Hadir valid
-                        $grouped[$id]['total_attend']++;
-                        $grouped[$id]['total_meal']++;
+                        $grouped[$no_excel]['total_attend']++;
+                        $grouped[$no_excel]['total_meal']++;
 
-                        $daily_status[$id][$date] = true;
+                        $daily_status[$no_excel][$date] = true;
                     }
                 }
                 // --- Kasus: dinas disetujui ---
                 elseif (strtolower($row->timeoff_reason ?? '') === 'dinas' && $row->is_verify == 1) {
-                    $grouped[$id]['presence'][$date] = '<span class="text-primary fw-bold">C</span>';
-                    $grouped[$id]['total_attend']++;
+                    $grouped[$no_excel]['presence'][$date] = '<span class="text-primary fw-bold">C</span>';
+                    $grouped[$no_excel]['total_attend']++;
 
-                    $daily_status[$id][$date] = true;
+                    $daily_status[$no_excel][$date] = true;
                 }
             }
 
+            // Add total working days to data for display
+            $data['total_working_days'] = $totalWorkingDays;
             $data['results'] = $grouped;
         }
+
+        // Get distinct places for filter dropdown
+        $data['places'] = $this->db->query("SELECT DISTINCT place FROM ppl_employee WHERE place IS NOT NULL AND place != '' ORDER BY place")->result();
 
         $this->load->view('theme/v_head', $data);
         $this->load->view('Allowance/v_allowance', $data);
@@ -132,49 +196,90 @@ class Allowance extends CI_Controller
     {
         $start = $this->input->get('absensi_start');
         $end   = $this->input->get('absensi_end');
+        $place_filter = $this->input->get('place');
 
         if (!$start || !$end) {
             show_error('Tanggal tidak boleh kosong');
         }
 
-        // Ambil data absensi + time off
-        $sql = "
-        SELECT 
-            e.idppl_employee, e.name, d.date, d.check_in, d.check_out, d.reason,
-            d.is_edit,
-            t.reason AS timeoff_reason, t.is_verify
-        FROM ppl_employee e
-        LEFT JOIN ppl_presence_detail d ON e.idppl_employee = d.idppl_employee
-        LEFT JOIN ppl_time_off t ON e.iduser = t.iduser AND d.date = t.date
-        WHERE d.date BETWEEN ? AND ?
-        ORDER BY e.name, d.date
+        // First, get all employees with place - ORDER BY name ASC
+        $sql_employees = "
+    SELECT e.idppl_employee, e.no_excel, e.name, e.iduser, e.place
+    FROM ppl_employee e
+    WHERE 1=1
     ";
-        $rows = $this->db->query($sql, [$start, $end])->result();
 
-        // Grouping per karyawan - gunakan logic yang sama seperti index()
+        $params_employees = [];
+
+        // Filter by place if selected
+        if ($place_filter && $place_filter != 'all') {
+            $sql_employees .= " AND e.place = ? ";
+            $params_employees[] = $place_filter;
+        }
+
+        // ORDER BY name ASC - simple alphabetical sorting
+        $sql_employees .= " ORDER BY LOWER(e.name) ASC";
+
+        $query_employees = $this->db->query($sql_employees, $params_employees);
+        $employees = $query_employees->result();
+
+        // Initialize grouped array with all employees - maintain order
         $grouped = [];
+        foreach ($employees as $emp) {
+            $grouped[$emp->no_excel] = [
+                'name'         => $emp->name,
+                'place'        => $emp->place,
+                'presence'     => [],
+                'total_attend' => 0,
+                'total_meal'   => 0
+            ];
+        }
+
+        // Now get presence data
+        $sql = "
+    SELECT 
+        e.no_excel, e.name, e.place,
+        d.date, d.check_in, d.check_out, d.reason, d.is_edit,
+        t.reason AS timeoff_reason, t.is_verify
+    FROM ppl_employee e
+    LEFT JOIN ppl_presence_detail d ON e.no_excel = d.no_excel 
+        AND d.date BETWEEN ? AND ?
+    LEFT JOIN ppl_time_off t ON e.iduser = t.iduser AND d.date = t.date
+    WHERE 1=1
+    ";
+
+        $params = [$start, $end];
+
+        // Filter by place if selected
+        if ($place_filter && $place_filter != 'all') {
+            $sql .= " AND e.place = ? ";
+            $params[] = $place_filter;
+        }
+
+        // ORDER BY name ASC - simple alphabetical sorting
+        $sql .= " ORDER BY LOWER(e.name) ASC, d.date";
+
+        $rows = $this->db->query($sql, $params)->result();
+
+        // Grouping per karyawan
         $daily_status = []; // untuk mencegah double count per hari
 
         foreach ($rows as $row) {
-            $id   = $row->idppl_employee;
+            $no_excel = $row->no_excel;
             $date = $row->date;
 
-            if (!isset($grouped[$id])) {
-                $grouped[$id] = [
-                    'name'         => $row->name,
-                    'presence'     => [],
-                    'total_attend' => 0,
-                    'total_meal'   => 0
-                ];
-            }
-
-            // skip kalau sudah dihitung untuk hari ini
-            if (isset($daily_status[$id][$date])) {
+            // Skip if no date
+            if (!$date) {
                 continue;
             }
 
-            // default tanda kosong (bisa diubah sesuai kebutuhan)
-            $grouped[$id]['presence'][$date] = '';
+            // skip kalau sudah dihitung untuk hari ini
+            if (isset($daily_status[$no_excel][$date])) {
+                continue;
+            }
+
+            // default tanda kosong
+            $grouped[$no_excel]['presence'][$date] = '';
 
             // --- Kasus: hadir absen (harus ada check_in & check_out) ---
             if ($row->check_in && $row->check_out) {
@@ -196,21 +301,19 @@ class Allowance extends CI_Controller
                 // tidak telat & tidak pulang cepat
                 if ($check_in_time <= $late_limit && $check_out_time >= $early_limit) {
                     // tanda hadir
-                    $grouped[$id]['presence'][$date] = '✓';
+                    $grouped[$no_excel]['presence'][$date] = '✓';
 
                     // hitung hadir valid
-                    $grouped[$id]['total_attend']++;
-                    $grouped[$id]['total_meal']++; // kalau masih pakai total_meal
-                    $daily_status[$id][$date] = true;
+                    $grouped[$no_excel]['total_attend']++;
+                    $daily_status[$no_excel][$date] = true;
                 }
             }
             // --- Kasus: dinas disetujui ---
             elseif (strtolower($row->timeoff_reason ?? '') === 'dinas' && $row->is_verify == 1) {
-                $grouped[$id]['presence'][$date] = 'C';
-                $grouped[$id]['total_attend']++;
-                $daily_status[$id][$date] = true;
+                $grouped[$no_excel]['presence'][$date] = 'C';
+                $grouped[$no_excel]['total_attend']++;
+                $daily_status[$no_excel][$date] = true;
             }
-            // lainnya tetap kosong / tidak dihitung
         }
 
         // =============== Excel ===============
@@ -225,10 +328,10 @@ class Allowance extends CI_Controller
         );
         $dates = iterator_to_array($period);
 
-        // Cari kolom terakhir (konversi sederhana - asumsikan jumlah kolom tidak melewati 'Z')
-        $lastCol = chr(ord('C') + count($dates) + 3);
+        // Cari kolom terakhir (tambah kolom untuk Place)
+        $lastCol = chr(ord('D') + count($dates) + 3);
 
-        // Judul (merge sampai kolom terakhir)
+        // Judul
         $sheet->mergeCells('A1:' . $lastCol . '1');
         $sheet->setCellValue('A1', 'Asta Homeware');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
@@ -253,8 +356,9 @@ class Allowance extends CI_Controller
         // Header tabel
         $headerRow = 5;
         $sheet->setCellValue('A' . $headerRow, 'No');
-        $sheet->setCellValue('B' . $headerRow, 'Nama');
-        $col = 'C';
+        $sheet->setCellValue('B' . $headerRow, 'Lokasi');
+        $sheet->setCellValue('C' . $headerRow, 'Nama');
+        $col = 'D';
         foreach ($dates as $d) {
             $sheet->setCellValue($col . $headerRow, $d->format('j'));
             // Minggu = merah
@@ -275,9 +379,10 @@ class Allowance extends CI_Controller
         $no = 1;
         foreach ($grouped as $emp) {
             $sheet->setCellValue('A' . $rowExcel, $no++);
-            $sheet->setCellValue('B' . $rowExcel, $emp['name']);
+            $sheet->setCellValue('B' . $rowExcel, $emp['place'] ?? '-');
+            $sheet->setCellValue('C' . $rowExcel, $emp['name']);
 
-            $col = 'C';
+            $col = 'D';
             foreach ($dates as $d) {
                 $dateStr = $d->format('Y-m-d');
                 $val = isset($emp['presence'][$dateStr]) ? $emp['presence'][$dateStr] : '';
@@ -295,7 +400,7 @@ class Allowance extends CI_Controller
             $total_attend = $emp['total_attend'];
             $sheet->setCellValue($col . $rowExcel, $total_attend);
 
-            // UM Rp20.000 (format angka supaya bisa dijumlahkan di Excel)
+            // UM Rp20.000
             $sheet->setCellValue(++$col . $rowExcel, 20000);
             $sheet->getStyle($col . $rowExcel)->getNumberFormat()
                 ->setFormatCode('"Rp"#,##0');
@@ -306,7 +411,7 @@ class Allowance extends CI_Controller
             $sheet->getStyle($col . $rowExcel)->getNumberFormat()
                 ->setFormatCode('"Rp"#,##0');
 
-            // TTD kosong (untuk tanda tangan manual)
+            // TTD kosong
             $sheet->setCellValue(++$col . $rowExcel, '');
 
             $rowExcel++;
